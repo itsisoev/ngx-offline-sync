@@ -3,3 +3,4 @@
  */
 
 export * from './lib/ngx-offline-sync';
+export * from './lib/core';
