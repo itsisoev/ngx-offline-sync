@@ -1,0 +1,37 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "cli": {
+    "packageManager": "npm",
+    "analytics": "5171c63a-412b-4349-988f-279d55576d63"
+  },
+  "newProjectRoot": "projects",
+  "projects": {
+    "ngx-offline-sync": {
+      "projectType": "library",
+      "root": "projects/ngx-offline-sync",
+      "sourceRoot": "projects/ngx-offline-sync/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/ngx-offline-sync/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/ngx-offline-sync/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/ngx-offline-sync/tsconfig.spec.json"
+          }
+        }
+      }
+    }
+  }
+}
