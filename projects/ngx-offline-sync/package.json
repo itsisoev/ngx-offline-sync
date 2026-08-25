@@ -1,6 +1,7 @@
 {
   "name": "ngx-offline-sync",
   "version": "1.0.6",
+  "description": "Offline HTTP request synchronization for Angular applications.",
   "author": {
     "name": "Daler",
     "email": "isoev9733@gmail.com"
@@ -24,6 +25,7 @@
     "network",
     "rxjs"
   ],
+  "license": "MIT",
   "peerDependencies": {
     "@angular/common": "^22.1.0",
     "@angular/core": "^22.1.0"
