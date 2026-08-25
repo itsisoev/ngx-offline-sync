@@ -59,7 +59,15 @@ export class QueueService implements IQueue {
 
     return items
       .filter((item) => item.status === SyncStatus.PENDING)
-      .sort((a, b) => a.createdAt - b.createdAt);
+      .sort((a, b) => {
+        const createdAtDiff = a.createdAt - b.createdAt;
+
+        if (createdAtDiff !== 0) {
+          return createdAtDiff;
+        }
+
+        return a.sequence - b.sequence;
+      });
   }
 
   async clear(): Promise<void> {

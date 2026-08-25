@@ -5,6 +5,7 @@ export interface IQueueItem {
   request: ISyncRequest;
   status: SyncStatus;
   attempts: number;
+  sequence: number;
   createdAt: number;
   updatedAt: number;
   error?: string;

@@ -13,5 +13,6 @@ export function createQueueItem(
     attempts: 0,
     createdAt: now,
     updatedAt: now,
+    sequence: 0,
   };
 }

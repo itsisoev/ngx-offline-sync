@@ -17,14 +17,6 @@ describe('QueueService + IndexedDbStorage', () => {
     queue = new QueueService(storage);
   });
 
-  beforeEach(async () => {
-    const storage = new IndexedDbStorage<IQueueItem>();
-
-    await storage.clear();
-
-    queue = new QueueService(storage);
-  });
-
   it('should enqueue and retrieve an item from IndexedDB', async () => {
     const item = createQueueItem({
       id: 'request-1',
@@ -120,5 +112,41 @@ describe('QueueService + IndexedDbStorage', () => {
     const stored = await secondStorage.get(item.id);
 
     expect(stored).toEqual(item);
+  });
+
+  it('should preserve FIFO order when items have the same createdAt', async () => {
+    const firstItem = createQueueItem({
+      id: 'request-1',
+      method: HttpMethod.POST,
+      url: '/posts/1',
+    });
+
+    const secondItem = createQueueItem({
+      id: 'request-2',
+      method: HttpMethod.POST,
+      url: '/posts/2',
+    });
+
+    const thirdItem = createQueueItem({
+      id: 'request-3',
+      method: HttpMethod.POST,
+      url: '/posts/3',
+    });
+
+    firstItem.createdAt = 1000;
+    secondItem.createdAt = 1000;
+    thirdItem.createdAt = 1000;
+
+    firstItem.sequence = 1;
+    secondItem.sequence = 2;
+    thirdItem.sequence = 3;
+
+    await queue.enqueue(firstItem);
+    await queue.enqueue(secondItem);
+    await queue.enqueue(thirdItem);
+
+    const result = await queue.getPending();
+
+    expect(result.map((item) => item.id)).toEqual([firstItem.id, secondItem.id, thirdItem.id]);
   });
 });
