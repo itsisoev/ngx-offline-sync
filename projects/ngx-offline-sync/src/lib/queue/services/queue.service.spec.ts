@@ -3,7 +3,7 @@ import { QueueService } from './queue.service';
 import { IQueueItem } from '../queue-item';
 import { createQueueItem } from '../queue-item';
 import { HttpMethod, SyncStatus } from '../../core';
-import { IStorage } from '../../storage/interfaces';
+import { IStorage } from '../../storage';
 
 class FakeStorage implements IStorage<IQueueItem> {
   private readonly items = new Map<string, IQueueItem>();
@@ -30,6 +30,9 @@ class FakeStorage implements IStorage<IQueueItem> {
 }
 
 describe('QueueService', () => {
+  let queue: QueueService;
+  let storage: FakeStorage;
+
   const createRequest = (id: string) => ({
     id,
     method: HttpMethod.POST,
@@ -37,6 +40,11 @@ describe('QueueService', () => {
     body: {
       title: 'Hello',
     },
+  });
+
+  beforeEach(() => {
+    storage = new FakeStorage();
+    queue = new QueueService(storage);
   });
 
   it('should enqueue an item', async () => {
@@ -294,5 +302,35 @@ describe('QueueService', () => {
 
     expect(result).toHaveLength(1);
     expect(result[0]).toEqual(item);
+  });
+
+  it('should return the earliest retry time', async () => {
+    const now = Date.now();
+
+    const first = createQueueItem(createRequest('request-1'));
+    const second = createQueueItem(createRequest('request-2'));
+    const third = createQueueItem(createRequest('request-3'));
+
+    first.nextRetryAt = now + 5000;
+    second.nextRetryAt = now + 1000;
+    third.nextRetryAt = now + 3000;
+
+    await queue.enqueue(first);
+    await queue.enqueue(second);
+    await queue.enqueue(third);
+
+    const result = await queue.getNextRetryAt();
+
+    expect(result).toBe(second.nextRetryAt);
+  });
+
+  it('should return undefined when there are no scheduled retries', async () => {
+    const item = createQueueItem(createRequest('request-1'));
+
+    await queue.enqueue(item);
+
+    const result = await queue.getNextRetryAt();
+
+    expect(result).toBeUndefined();
   });
 });
