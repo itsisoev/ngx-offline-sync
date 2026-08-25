@@ -1,10 +1,10 @@
-import { inject, Service } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { NetworkStatusService } from '../../network';
 import { SyncService } from './sync.service';
 import { RetrySchedulerService } from './retry-scheduler.service';
 
-@Service()
+@Injectable()
 export class SyncCoordinatorService {
   private readonly networkStatus = inject(NetworkStatusService);
   private readonly syncService = inject(SyncService);
