@@ -1,8 +1,8 @@
 import { IQueue } from '../interfaces';
-import { IStorage } from '../../storage/interfaces';
 import { IQueueItem } from '../queue-item';
 import { IQueueItemUpdate } from '../queue-item/interfaces/queue-item-update.interface';
 import { SyncStatus } from '../../core';
+import { IStorage } from '../../storage';
 
 export class QueueService implements IQueue {
   constructor(private readonly storage: IStorage<IQueueItem>) {}
@@ -56,9 +56,20 @@ export class QueueService implements IQueue {
 
   async getPending(): Promise<IQueueItem[]> {
     const items = await this.storage.getAll();
+    const now = Date.now();
 
     return items
-      .filter((item) => item.status === SyncStatus.PENDING)
+      .filter((item) => {
+        if (item.status !== SyncStatus.PENDING) {
+          return false;
+        }
+
+        if (item.nextRetryAt !== undefined && item.nextRetryAt > now) {
+          return false;
+        }
+
+        return true;
+      })
       .sort((a, b) => {
         const createdAtDiff = a.createdAt - b.createdAt;
 

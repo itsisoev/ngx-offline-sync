@@ -262,4 +262,37 @@ describe('QueueService', () => {
 
     expect(result).toBeUndefined();
   });
+
+  it('should not return an item before its retry time', async () => {
+    const storage = new FakeStorage();
+    const queue = new QueueService(storage);
+
+    const item = createQueueItem(createRequest('request-1'));
+
+    item.status = SyncStatus.PENDING;
+    item.nextRetryAt = Date.now() + 60_000;
+
+    await queue.enqueue(item);
+
+    const result = await queue.getPending();
+
+    expect(result).toHaveLength(0);
+  });
+
+  it('should return an item when its retry time has passed', async () => {
+    const storage = new FakeStorage();
+    const queue = new QueueService(storage);
+
+    const item = createQueueItem(createRequest('request-1'));
+
+    item.status = SyncStatus.PENDING;
+    item.nextRetryAt = Date.now() - 1;
+
+    await queue.enqueue(item);
+
+    const result = await queue.getPending();
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toEqual(item);
+  });
 });
