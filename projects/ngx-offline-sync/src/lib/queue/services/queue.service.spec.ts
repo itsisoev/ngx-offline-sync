@@ -68,7 +68,7 @@ describe('QueueService', () => {
     expect(result).toEqual(first);
   });
 
-  it('should remove and return the first pending item with dequeue', async () => {
+  it('should mark the first pending item as syncing with dequeue', async () => {
     const storage = new FakeStorage();
     const queue = new QueueService(storage);
 
@@ -80,7 +80,12 @@ describe('QueueService', () => {
 
     const result = await queue.dequeue();
 
-    expect(result).toEqual(first);
+    expect(result?.id).toBe(first.id);
+    expect(result?.status).toBe(SyncStatus.SYNCING);
+
+    const stored = await storage.get(first.id);
+
+    expect(stored?.status).toBe(SyncStatus.SYNCING);
 
     const remaining = await queue.getPending();
 
@@ -147,5 +152,38 @@ describe('QueueService', () => {
     await queue.clear();
 
     expect(await queue.size()).toBe(0);
+  });
+
+
+  it('should update an item', async () => {
+    const storage = new FakeStorage();
+    const queue = new QueueService(storage);
+
+    const item = createQueueItem(createRequest('request-1'));
+
+    await queue.enqueue(item);
+
+    await queue.update(item.id, {
+      status: SyncStatus.SYNCING,
+      attempts: 1,
+    });
+
+    const result = await storage.get(item.id);
+
+    expect(result?.status).toBe(SyncStatus.SYNCING);
+    expect(result?.attempts).toBe(1);
+  });
+
+  it('should do nothing when updating a non-existent item', async () => {
+    const storage = new FakeStorage();
+    const queue = new QueueService(storage);
+
+    await queue.update('unknown-id', {
+      status: SyncStatus.SYNCING,
+    });
+
+    const result = await storage.get('unknown-id');
+
+    expect(result).toBeUndefined();
   });
 });

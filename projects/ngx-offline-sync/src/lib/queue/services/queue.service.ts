@@ -1,6 +1,8 @@
 import { IQueue } from '../interfaces';
 import { IStorage } from '../../storage/interfaces';
 import { IQueueItem } from '../queue-item';
+import { IQueueItemUpdate } from '../queue-item/interfaces/queue-item-update.interface';
+import { SyncStatus } from '../../core';
 
 export class QueueService implements IQueue {
   constructor(private readonly storage: IStorage<IQueueItem>) {}
@@ -16,9 +18,14 @@ export class QueueService implements IQueue {
       return undefined;
     }
 
-    await this.storage.delete(item.id);
+    await this.update(item.id, {
+      status: SyncStatus.SYNCING,
+    });
 
-    return item;
+    return {
+      ...item,
+      status: SyncStatus.SYNCING,
+    };
   }
 
   async peek(): Promise<IQueueItem | undefined> {
@@ -31,11 +38,27 @@ export class QueueService implements IQueue {
     await this.storage.delete(id);
   }
 
+  async update(id: string, changes: IQueueItemUpdate): Promise<void> {
+    const item = await this.storage.get(id);
+
+    if (!item) {
+      return;
+    }
+
+    const updatedItem: IQueueItem = {
+      ...item,
+      ...changes,
+      updatedAt: Date.now(),
+    };
+
+    await this.storage.save(updatedItem);
+  }
+
   async getPending(): Promise<IQueueItem[]> {
     const items = await this.storage.getAll();
 
     return items
-      .filter((item) => item.status === 'PENDING')
+      .filter((item) => item.status === SyncStatus.PENDING)
       .sort((a, b) => a.createdAt - b.createdAt);
   }
 

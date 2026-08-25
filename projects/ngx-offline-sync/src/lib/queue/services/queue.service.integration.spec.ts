@@ -2,13 +2,20 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import 'fake-indexeddb/auto';
 import { QueueService } from './queue.service';
 import { IndexedDbStorage } from '../../storage/indexed-db';
-import { IQueueItem } from '../queue-item';
-import { createQueueItem } from '../queue-item';
-import { HttpMethod } from '../../core';
-
+import { createQueueItem, IQueueItem } from '../queue-item';
+import { HttpMethod, SyncStatus } from '../../core';
 
 describe('QueueService + IndexedDbStorage', () => {
   let queue: QueueService;
+  let storage: IndexedDbStorage<IQueueItem>;
+
+  beforeEach(async () => {
+    storage = new IndexedDbStorage<IQueueItem>();
+
+    await storage.clear();
+
+    queue = new QueueService(storage);
+  });
 
   beforeEach(async () => {
     const storage = new IndexedDbStorage<IQueueItem>();
@@ -66,8 +73,33 @@ describe('QueueService + IndexedDbStorage', () => {
     const second = await queue.dequeue();
     const third = await queue.dequeue();
 
-    expect(first).toEqual(firstItem);
-    expect(second).toEqual(secondItem);
-    expect(third).toEqual(thirdItem);
+    expect(first?.id).toBe(firstItem.id);
+    expect(first?.status).toBe(SyncStatus.SYNCING);
+
+    expect(second?.id).toBe(secondItem.id);
+    expect(second?.status).toBe(SyncStatus.SYNCING);
+
+    expect(third?.id).toBe(thirdItem.id);
+    expect(third?.status).toBe(SyncStatus.SYNCING);
+  });
+
+  it('should update an item in IndexedDB', async () => {
+    const item = createQueueItem({
+      id: 'request-1',
+      method: HttpMethod.POST,
+      url: '/posts',
+    });
+
+    await queue.enqueue(item);
+
+    await queue.update(item.id, {
+      status: SyncStatus.SYNCING,
+      attempts: 1,
+    });
+
+    const result = await storage.get(item.id);
+
+    expect(result?.status).toBe(SyncStatus.SYNCING);
+    expect(result?.attempts).toBe(1);
   });
 });
