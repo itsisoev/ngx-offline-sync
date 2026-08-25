@@ -1,3 +1,7 @@
 export * from './interceptors/offline-sync.interceptor';
+export * from './interfaces/retry-policy.interface';
+export * from './interfaces/sync.service.interface';
+export * from './policies/retry.policy';
 export * from './services/sync-coordinator.service';
 export * from './services/retry-scheduler.service';
+export * from './services/sync.service';
