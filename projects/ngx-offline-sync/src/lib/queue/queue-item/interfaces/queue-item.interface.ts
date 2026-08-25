@@ -8,5 +8,6 @@ export interface IQueueItem {
   sequence: number;
   createdAt: number;
   updatedAt: number;
+  nextRetryAt?: number;
   error?: string;
 }
