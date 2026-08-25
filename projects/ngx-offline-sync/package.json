@@ -1,10 +1,29 @@
 {
   "name": "ngx-offline-sync",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "author": {
     "name": "Daler",
     "email": "isoev9733@gmail.com"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itsisoev/ngx-offline-sync.git"
+  },
+  "homepage": "https://github.com/itsisoev/ngx-offline-sync#readme",
+  "bugs": {
+    "url": "https://github.com/itsisoev/ngx-offline-sync/issues"
+  },
+  "keywords": [
+    "angular",
+    "offline",
+    "offline-first",
+    "http",
+    "sync",
+    "indexeddb",
+    "queue",
+    "network",
+    "rxjs"
+  ],
   "peerDependencies": {
     "@angular/common": "^22.1.0",
     "@angular/core": "^22.1.0"
