@@ -1,64 +1,258 @@
-# NgxOfflineSync
+# ngx-offline-sync
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.1.0.
+An Angular library that automatically saves HTTP requests when there is no internet connection and synchronizes them once the connection is restored.
 
-## Code scaffolding
+## Contents
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+- [Features](#features)
+- [Installation](#installation)
+- [Setup](#setup)
+- [Usage](#usage)
+- [How it works](#how-it-works)
+- [Request statuses](#request-statuses)
+- [Retries](#retries)
+- [Architecture](#architecture)
+- [Roadmap](#roadmap)
+- [Limitations](#limitations)
+- [License](#license)
 
-```bash
-ng generate component component-name
-```
+## Features
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+- Automatically queues HTTP requests when there is no network connection
+- Persists the queue in IndexedDB
+- Automatically syncs the queue once the connection is restored
+- Processes requests sequentially
+- Retries failed requests
+- Tracks the status of each request
+- Supports `POST`, `PUT`, `PATCH`, and `DELETE`
 
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the library, run:
-
-```bash
-ng build ngx-offline-sync
-```
-
-This command will compile your project, and the build artifacts will be placed in the `dist/` directory.
-
-### Publishing the Library
-
-Once the project is built, you can publish your library by following these steps:
-
-1. Navigate to the `dist` directory:
-
-   ```bash
-   cd dist/ngx-offline-sync
-   ```
-
-2. Run the `npm publish` command to publish your library to the npm registry:
-   ```bash
-   npm publish
-   ```
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+## Installation
 
 ```bash
-ng test
+npm install ngx-offline-sync
 ```
 
-## Running end-to-end tests
+## Setup
 
-For end-to-end (e2e) testing, run:
+Add `provideOfflineSync()` and `offlineSyncInterceptor` to your application configuration:
 
-```bash
-ng e2e
+```ts
+import { ApplicationConfig } from '@angular/core';
+
+import {
+  provideHttpClient,
+  withInterceptors,
+} from '@angular/common/http';
+
+import {
+  provideOfflineSync,
+  offlineSyncInterceptor,
+} from 'ngx-offline-sync';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideOfflineSync(),
+
+    provideHttpClient(
+      withInterceptors([
+        offlineSyncInterceptor,
+      ]),
+    ),
+  ],
+};
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+Once set up, the library manages the queue, storage, synchronization, and retries on its own. No additional registration of internal services is required.
 
-## Additional Resources
+## Usage
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Once set up, the library doesn't require any special API for sending requests. Just use the regular `HttpClient`:
+
+```ts
+this.http.post('/api/products', product).subscribe();
+```
+
+- If an internet connection is available, the request is sent as usual.
+- If the connection is unavailable, the request is automatically added to the queue.
+
+## How it works
+
+### Internet available
+
+```
+HttpClient
+    ↓
+offlineSyncInterceptor
+    ↓
+HTTP request
+    ↓
+Server
+```
+
+The request is sent directly.
+
+### Internet unavailable
+
+```
+HttpClient
+    ↓
+offlineSyncInterceptor
+    ↓
+QueueService
+    ↓
+IndexedDB
+    ↓
+PENDING
+```
+
+The request is saved locally and waits for the connection to be restored.
+
+### Internet restored
+
+```
+NetworkStatusService
+    ↓
+SyncCoordinatorService
+    ↓
+SyncService
+    ↓
+SYNCING
+    ↓
+HTTP request
+    ↓
+COMPLETED
+```
+
+The queue is processed automatically.
+
+## Request statuses
+
+Each request has one of the following statuses:
+
+| Status      | Description                           |
+|-------------|---------------------------------------|
+| `PENDING`   | The request is waiting to be executed |
+| `SYNCING`   | The request is being executed         |
+| `COMPLETED` | The request was executed successfully |
+| `FAILED`    | The request could not be executed     |
+
+Basic request lifecycle:
+
+```
+PENDING → SYNCING → COMPLETED
+```
+
+On error:
+
+```
+SYNCING → RetryPolicy → PENDING → Retry
+```
+
+If the request should no longer be retried:
+
+```
+SYNCING → FAILED
+```
+
+## Retries
+
+If synchronization fails, the library passes the error to the `RetryPolicy`.
+
+The policy determines:
+
+- whether the request should be retried;
+- the delay before the next attempt;
+- when the request should be marked as `FAILED`.
+
+Overall lifecycle:
+
+```
+SYNCING → Request failed → RetryPolicy → PENDING → Retry
+```
+
+After a successful execution:
+
+```
+PENDING → SYNCING → COMPLETED
+```
+
+If the number of attempts exceeds the allowed limit:
+
+```
+SYNCING → Request failed → FAILED
+```
+
+## Architecture
+
+The library is split into several core components:
+
+```
+NetworkStatusService
+        │
+        ▼
+OfflineSyncInterceptor
+        │
+        ▼
+QueueService
+        │
+        ▼
+IndexedDbStorage
+        │
+        ▼
+SyncCoordinatorService
+        │
+        ▼
+SyncService
+        │
+        ├── RetryPolicy
+        │
+        └── HttpClient
+```
+
+### Core components
+
+**offlineSyncInterceptor**
+Intercepts HTTP requests and determines whether a request needs to be queued.
+
+**NetworkStatusService**
+Tracks the state of the internet connection and notifies the library when it's restored.
+
+**QueueService**
+Manages the request queue: adding, retrieving, updating, and removing items.
+
+**IndexedDbStorage**
+Uses IndexedDB for persistent local storage of the queue.
+
+**SyncCoordinatorService**
+Watches for the connection to be restored and triggers queue synchronization.
+
+**SyncService**
+Retrieves requests from the queue, executes them via `HttpClient`, and updates their status.
+
+**RetryPolicy**
+Defines the rules for retrying failed requests.
+
+## Roadmap
+
+The project is under active development. Planned improvements include:
+
+- Support for configurable retry strategies
+- Extended queue configuration options
+- Request priority management
+- The ability to cancel and remove requests from the queue
+- Extended sync-state management
+- Improved error and network-state handling
+- Extended IndexedDB configuration options
+- Additional tools for monitoring the queue
+- Expanded test coverage
+- Improved documentation and usage examples
+
+## Limitations
+
+- Currently, the library is designed to sync the following HTTP methods: `POST`, `PUT`, `PATCH`, `DELETE`.
+- `GET` requests are not added to the offline queue.
+- The queue is stored locally in the browser's IndexedDB.
+
+## License
+
+See [LICENSE](LICENSE).
