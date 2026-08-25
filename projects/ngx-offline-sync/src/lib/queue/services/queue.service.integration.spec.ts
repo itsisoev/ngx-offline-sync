@@ -102,4 +102,23 @@ describe('QueueService + IndexedDbStorage', () => {
     expect(result?.status).toBe(SyncStatus.SYNCING);
     expect(result?.attempts).toBe(1);
   });
+
+  it('should persist an item between storage instances', async () => {
+    const firstStorage = new IndexedDbStorage<IQueueItem>();
+    const firstQueue = new QueueService(firstStorage);
+
+    const item = createQueueItem({
+      id: 'request-1',
+      method: HttpMethod.POST,
+      url: '/posts',
+    });
+
+    await firstQueue.enqueue(item);
+
+    const secondStorage = new IndexedDbStorage<IQueueItem>();
+
+    const stored = await secondStorage.get(item.id);
+
+    expect(stored).toEqual(item);
+  });
 });

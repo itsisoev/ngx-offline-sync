@@ -186,4 +186,80 @@ describe('QueueService', () => {
 
     expect(result).toBeUndefined();
   });
+
+  it('should mark an item as completed', async () => {
+    const storage = new FakeStorage();
+    const queue = new QueueService(storage);
+
+    const item = createQueueItem(createRequest('request-1'));
+
+    await queue.enqueue(item);
+
+    const syncingItem = await queue.dequeue();
+
+    expect(syncingItem?.status).toBe(SyncStatus.SYNCING);
+
+    await queue.update(item.id, {
+      status: SyncStatus.COMPLETED,
+    });
+
+    const result = await storage.get(item.id);
+
+    expect(result?.status).toBe(SyncStatus.COMPLETED);
+  });
+
+  it('should mark an item as failed', async () => {
+    const storage = new FakeStorage();
+    const queue = new QueueService(storage);
+
+    const item = createQueueItem(createRequest('request-1'));
+
+    await queue.enqueue(item);
+
+    const syncingItem = await queue.dequeue();
+
+    expect(syncingItem?.status).toBe(SyncStatus.SYNCING);
+
+    await queue.update(item.id, {
+      status: SyncStatus.FAILED,
+      attempts: 1,
+      error: 'Network error',
+    });
+
+    const result = await storage.get(item.id);
+
+    expect(result?.status).toBe(SyncStatus.FAILED);
+    expect(result?.attempts).toBe(1);
+    expect(result?.error).toBe('Network error');
+  });
+
+  it('should preserve item data when updating its status', async () => {
+    const storage = new FakeStorage();
+    const queue = new QueueService(storage);
+
+    const item = createQueueItem(createRequest('request-1'));
+
+    await queue.enqueue(item);
+
+    await queue.update(item.id, {
+      status: SyncStatus.SYNCING,
+    });
+
+    const result = await storage.get(item.id);
+
+    expect(result?.id).toBe(item.id);
+    expect(result?.request).toEqual(item.request);
+    expect(result?.status).toBe(SyncStatus.SYNCING);
+    expect(result?.attempts).toBe(0);
+    expect(result?.createdAt).toBe(item.createdAt);
+  });
+
+  it('should return undefined when dequeuing an empty queue', async () => {
+    const storage = new FakeStorage();
+    const queue = new QueueService(storage);
+
+    const result = await queue.dequeue();
+
+    expect(result).toBeUndefined();
+  });
 });
