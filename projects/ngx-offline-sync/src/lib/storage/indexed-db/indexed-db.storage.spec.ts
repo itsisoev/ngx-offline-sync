@@ -8,8 +8,9 @@ describe('IndexedDbStorage', () => {
     name: string;
   }>;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     storage = new IndexedDbStorage();
+    await storage.clear();
   });
 
   it('should save and get an item', async () => {
