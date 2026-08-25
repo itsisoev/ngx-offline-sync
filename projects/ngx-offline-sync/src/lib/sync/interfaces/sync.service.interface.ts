@@ -1,3 +1,5 @@
 export interface ISyncService {
-  sync(): Promise<void>;
+  sync(): Promise<boolean>;
+
+  getNextRetryAt(): Promise<number | undefined>;
 }

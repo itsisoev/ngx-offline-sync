@@ -3,7 +3,6 @@ import { HttpClient } from '@angular/common/http';
 import { ISyncService } from '../interfaces/sync.service.interface';
 import { IRetryPolicy } from '../interfaces/retry-policy.interface';
 import { RetryPolicy } from '../policies/retry.policy';
-
 import { QueueService } from '../../queue';
 import { SyncStatus } from '../../core';
 
@@ -14,11 +13,11 @@ export class SyncService implements ISyncService {
     private readonly retryPolicy: IRetryPolicy = new RetryPolicy(),
   ) {}
 
-  async sync(): Promise<void> {
+  async sync(): Promise<boolean> {
     const item = await this.queue.dequeue();
 
     if (!item) {
-      return;
+      return false;
     }
 
     try {
@@ -36,6 +35,8 @@ export class SyncService implements ISyncService {
     } catch (error) {
       await this.handleError(item.id, item.attempts, error);
     }
+
+    return true;
   }
 
   private async handleError(id: string, attempts: number, error: unknown): Promise<void> {
@@ -70,5 +71,19 @@ export class SyncService implements ISyncService {
     }
 
     return 'Unknown error';
+  }
+
+  async getNextRetryAt(): Promise<number | undefined> {
+    const items = await this.queue.getPending();
+
+    const retryTimes = items
+      .map((item) => item.nextRetryAt)
+      .filter((value): value is number => value !== undefined);
+
+    if (retryTimes.length === 0) {
+      return undefined;
+    }
+
+    return Math.min(...retryTimes);
   }
 }

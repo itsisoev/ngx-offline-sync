@@ -81,6 +81,20 @@ export class QueueService implements IQueue {
       });
   }
 
+  async getNextRetryAt(): Promise<number | undefined> {
+    const items = await this.storage.getAll();
+
+    const retryTimes = items
+      .filter((item) => item.status === SyncStatus.PENDING && item.nextRetryAt !== undefined)
+      .map((item) => item.nextRetryAt!);
+
+    if (retryTimes.length === 0) {
+      return undefined;
+    }
+
+    return Math.min(...retryTimes);
+  }
+
   async clear(): Promise<void> {
     await this.storage.clear();
   }
