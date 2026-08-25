@@ -1,6 +1,10 @@
 {
   "name": "ngx-offline-sync",
-  "version": "0.0.1",
+  "version": "1.0.0",
+  "author": {
+    "name": "Daler",
+    "email": "isoev9733@gmail.com"
+  },
   "peerDependencies": {
     "@angular/common": "^22.1.0",
     "@angular/core": "^22.1.0"
