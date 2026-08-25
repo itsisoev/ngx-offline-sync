@@ -1,9 +1,15 @@
-import { EnvironmentProviders, makeEnvironmentProviders } from '@angular/core';
+import {
+  EnvironmentProviders,
+  ENVIRONMENT_INITIALIZER,
+  inject,
+  makeEnvironmentProviders,
+} from '@angular/core';
+
 import { HttpClient } from '@angular/common/http';
+
 import { QueueService, IQueueItem } from './queue';
 import { IndexedDbStorage } from './storage';
-import { RetryPolicy } from './sync';
-import { SyncService, RetrySchedulerService, SyncCoordinatorService } from './sync';
+import { RetryPolicy, SyncService, RetrySchedulerService, SyncCoordinatorService } from './sync';
 import { NetworkStatusService } from './network';
 
 export function provideOfflineSync(): EnvironmentProviders {
@@ -34,7 +40,16 @@ export function provideOfflineSync(): EnvironmentProviders {
     },
 
     RetrySchedulerService,
-
     SyncCoordinatorService,
+
+    {
+      provide: ENVIRONMENT_INITIALIZER,
+      multi: true,
+      useValue: () => {
+        const coordinator = inject(SyncCoordinatorService);
+
+        coordinator.start();
+      },
+    },
   ]);
 }

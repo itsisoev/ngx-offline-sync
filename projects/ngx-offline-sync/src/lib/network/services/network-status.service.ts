@@ -1,8 +1,10 @@
-import { Service } from '@angular/core';
-import { fromEvent, merge, Observable, of } from 'rxjs';
-import { map, distinctUntilChanged, startWith } from 'rxjs/operators';
+import { Injectable } from '@angular/core';
+import { fromEvent, merge, Observable } from 'rxjs';
+import { distinctUntilChanged, map, startWith } from 'rxjs/operators';
 
-@Service()
+@Injectable({
+  providedIn: 'root',
+})
 export class NetworkStatusService {
   readonly online$: Observable<boolean> = merge(
     fromEvent(window, 'online').pipe(map(() => true)),

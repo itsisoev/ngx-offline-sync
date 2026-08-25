@@ -1,6 +1,6 @@
 {
   "name": "ngx-offline-sync",
-  "version": "1.0.1",
+  "version": "1.0.5",
   "author": {
     "name": "Daler",
     "email": "isoev9733@gmail.com"
@@ -21,6 +21,7 @@
     "@angular/forms": "^22.1.0",
     "@angular/platform-browser": "^22.1.0",
     "@angular/router": "^22.1.0",
+    "ngx-offline-sync": "file:ngx-offline-sync-1.0.2.tgz",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },
