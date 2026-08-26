@@ -1,5 +1,11 @@
 # ngx-offline-sync
 
+<div>
+  <img src="https://img.shields.io/npm/dt/ngx-offline-sync" />
+  <img src="https://img.shields.io/npm/v/ngx-offline-sync" />
+  <img src="https://img.shields.io/github/stars/itsisoev/ngx-offline-sync" />
+</div>
+
 Библиотека для Angular, которая автоматически сохраняет HTTP-запросы при отсутствии интернет-соединения и синхронизирует их после восстановления сети.
 
 **Документация:** [English](../../README.md) · Русский · [日本語](../ja/README.md)
