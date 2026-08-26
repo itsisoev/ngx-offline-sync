@@ -27,11 +27,7 @@ export class SyncService implements ISyncService {
         }),
       );
 
-      await this.queue.update(item.id, {
-        status: SyncStatus.COMPLETED,
-        nextRetryAt: undefined,
-        error: undefined,
-      });
+      await this.queue.remove(item.id);
     } catch (error) {
       await this.handleError(item.id, item.attempts, error);
     }

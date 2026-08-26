@@ -4,11 +4,11 @@ import {
 } from '@angular/core';
 import { Subject } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
-
 import { SyncCoordinatorService } from './sync-coordinator.service';
 import { SyncService } from './sync.service';
 import { RetrySchedulerService } from './retry-scheduler.service';
 import { NetworkStatusService } from '../../network';
+import { OFFLINE_SYNC_CONFIG } from '../../config';
 
 describe('SyncCoordinatorService', () => {
   function createCoordinator() {
@@ -45,6 +45,12 @@ describe('SyncCoordinatorService', () => {
         {
           provide: RetrySchedulerService,
           useValue: retryScheduler,
+        },
+        {
+          provide: OFFLINE_SYNC_CONFIG,
+          useValue: {
+            batchSize: 2,
+          },
         },
       ],
       null as never,
@@ -100,7 +106,7 @@ describe('SyncCoordinatorService', () => {
   it('should schedule the next retry', async () => {
     const { coordinator, online$, syncService, schedule, parentInjector } = createCoordinator();
 
-    syncService.sync.mockResolvedValue(false);
+    syncService.sync.mockResolvedValueOnce(false).mockResolvedValueOnce(false);
 
     syncService.getNextRetryAt.mockResolvedValue(Date.now() + 1000);
 
@@ -136,6 +142,89 @@ describe('SyncCoordinatorService', () => {
 
     expect(syncService.sync).not.toHaveBeenCalled();
     expect(cancel).toHaveBeenCalledTimes(1);
+
+    parentInjector.destroy();
+  });
+
+  it('should respect the configured batch size limit', async () => {
+    const { coordinator, online$, syncService, parentInjector } = createCoordinator();
+
+    let resolveFirst!: (value: boolean) => void;
+    let resolveSecond!: (value: boolean) => void;
+
+    const firstSync = new Promise<boolean>((resolve) => {
+      resolveFirst = resolve;
+    });
+
+    const secondSync = new Promise<boolean>((resolve) => {
+      resolveSecond = resolve;
+    });
+
+    syncService.sync
+      .mockReturnValueOnce(firstSync)
+      .mockReturnValueOnce(secondSync)
+      .mockResolvedValueOnce(false)
+      .mockResolvedValueOnce(false);
+
+    coordinator.start();
+
+    online$.next(true);
+
+    await vi.waitFor(() => {
+      expect(syncService.sync).toHaveBeenCalledTimes(2);
+    });
+
+    resolveFirst(true);
+    resolveSecond(true);
+
+    await vi.waitFor(() => {
+      expect(syncService.sync).toHaveBeenCalledTimes(4);
+    });
+
+    parentInjector.destroy();
+  });
+
+  it('should not start the next batch before the current batch is completed', async () => {
+    const { coordinator, online$, syncService, parentInjector } = createCoordinator();
+
+    let resolveFirst!: (value: boolean) => void;
+    let resolveSecond!: (value: boolean) => void;
+
+    const firstSync = new Promise<boolean>((resolve) => {
+      resolveFirst = resolve;
+    });
+
+    const secondSync = new Promise<boolean>((resolve) => {
+      resolveSecond = resolve;
+    });
+
+    syncService.sync
+      .mockReturnValueOnce(firstSync)
+      .mockReturnValueOnce(secondSync)
+      .mockResolvedValueOnce(false)
+      .mockResolvedValueOnce(false);
+
+    coordinator.start();
+
+    online$.next(true);
+
+    await vi.waitFor(() => {
+      expect(syncService.sync).toHaveBeenCalledTimes(2);
+    });
+
+    expect(syncService.sync).toHaveBeenCalledTimes(2);
+
+    resolveFirst(true);
+
+    await Promise.resolve();
+
+    expect(syncService.sync).toHaveBeenCalledTimes(2);
+
+    resolveSecond(true);
+
+    await vi.waitFor(() => {
+      expect(syncService.sync).toHaveBeenCalledTimes(4);
+    });
 
     parentInjector.destroy();
   });
