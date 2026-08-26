@@ -2,7 +2,9 @@
 
 <div>
   <img src="https://img.shields.io/npm/dt/ngx-offline-sync" />
-  <img src="https://img.shields.io/npm/v/ngx-offline-sync" />
+  <a href="https://www.npmjs.com/package/ngx-offline-sync">
+    <img src="https://img.shields.io/badge/npm-ngx--offline--sync-CB3837?logo=npm&logoColor=white" alt="npm package" />
+  </a>
   <img src="https://img.shields.io/github/stars/itsisoev/ngx-offline-sync" />
 </div>
 
