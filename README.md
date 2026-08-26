@@ -1,5 +1,11 @@
 # ngx-offline-sync
 
+<div>
+  <img src="https://img.shields.io/npm/dt/ngx-offline-sync" />
+  <img src="https://img.shields.io/npm/v/ngx-offline-sync" />
+  <img src="https://img.shields.io/github/stars/itsisoev/ngx-offline-sync" />
+</div>
+
 An Angular library that automatically saves HTTP requests when there is no internet connection and synchronizes them once the connection is restored.
 
 **Documentation:** English · [Русский](docs/ru/README.md) · [日本語](docs/ja/README.md)
