@@ -333,4 +333,40 @@ describe('QueueService', () => {
 
     expect(result).toBeUndefined();
   });
+
+  it('should dequeue different items when called concurrently', async () => {
+    const first = createQueueItem(createRequest('request-1'));
+    const second = createQueueItem(createRequest('request-2'));
+    const third = createQueueItem(createRequest('request-3'));
+
+    await queue.enqueue(first);
+    await queue.enqueue(second);
+    await queue.enqueue(third);
+
+    const results = await Promise.all([queue.dequeue(), queue.dequeue(), queue.dequeue()]);
+
+    const ids = results.map((item) => item?.id);
+
+    expect(ids).toEqual([first.id, second.id, third.id]);
+    expect(new Set(ids).size).toBe(3);
+  });
+
+  it('should release an item reservation when updating it back to pending', async () => {
+    const item = createQueueItem(createRequest('request-1'));
+
+    await queue.enqueue(item);
+
+    const syncingItem = await queue.dequeue();
+
+    expect(syncingItem?.status).toBe(SyncStatus.SYNCING);
+
+    await queue.update(item.id, {
+      status: SyncStatus.PENDING,
+    });
+
+    const result = await queue.dequeue();
+
+    expect(result?.id).toBe(item.id);
+    expect(result?.status).toBe(SyncStatus.SYNCING);
+  });
 });

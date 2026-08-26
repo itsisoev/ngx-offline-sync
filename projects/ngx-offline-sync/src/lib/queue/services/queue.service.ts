@@ -5,6 +5,8 @@ import { SyncStatus } from '../../core';
 import { IStorage } from '../../storage';
 
 export class QueueService implements IQueue {
+  private readonly reservedIds = new Set<string>();
+
   constructor(private readonly storage: IStorage<IQueueItem>) {}
 
   async enqueue(item: IQueueItem): Promise<void> {
@@ -12,11 +14,15 @@ export class QueueService implements IQueue {
   }
 
   async dequeue(): Promise<IQueueItem | undefined> {
-    const item = await this.peek();
+    const items = await this.getPending();
+
+    const item = items.find((item) => !this.reservedIds.has(item.id));
 
     if (!item) {
       return undefined;
     }
+
+    this.reservedIds.add(item.id);
 
     await this.update(item.id, {
       status: SyncStatus.SYNCING,
@@ -52,6 +58,10 @@ export class QueueService implements IQueue {
     };
 
     await this.storage.save(updatedItem);
+
+    if (updatedItem.status !== SyncStatus.SYNCING) {
+      this.reservedIds.delete(id);
+    }
   }
 
   async getPending(): Promise<IQueueItem[]> {

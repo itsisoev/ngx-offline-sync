@@ -3,12 +3,15 @@ import { Subscription } from 'rxjs';
 import { NetworkStatusService } from '../../network';
 import { SyncService } from './sync.service';
 import { RetrySchedulerService } from './retry-scheduler.service';
+import { OFFLINE_SYNC_CONFIG } from '../../config';
 
 @Injectable()
 export class SyncCoordinatorService {
   private readonly networkStatus = inject(NetworkStatusService);
   private readonly syncService = inject(SyncService);
   private readonly retryScheduler = inject(RetrySchedulerService);
+
+  private readonly config = inject(OFFLINE_SYNC_CONFIG);
 
   private subscription?: Subscription;
   private syncing = false;
@@ -43,7 +46,7 @@ export class SyncCoordinatorService {
 
     try {
       while (true) {
-        const processed = await this.syncService.sync();
+        const processed = await this.syncBatch();
 
         if (!processed) {
           break;
@@ -66,5 +69,15 @@ export class SyncCoordinatorService {
     const delay = Math.max(0, nextRetryAt - Date.now());
 
     this.retryScheduler.schedule(delay, () => this.syncQueue());
+  }
+
+  private async syncBatch(): Promise<boolean> {
+    const batchSize = this.config.batchSize ?? 1;
+
+    const workers = Array.from({ length: batchSize }, () => this.syncService.sync());
+
+    const results = await Promise.all(workers);
+
+    return results.some(Boolean);
   }
 }

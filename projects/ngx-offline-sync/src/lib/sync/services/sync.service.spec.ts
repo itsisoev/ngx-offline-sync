@@ -56,7 +56,7 @@ class FakeHttpClient {
 }
 
 describe('SyncService', () => {
-  it('should mark item as completed when request succeeds', async () => {
+  it('should remove item when request succeeds', async () => {
     const storage = new FakeStorage();
     const queue = new QueueService(storage);
     const http = new FakeHttpClient();
@@ -78,7 +78,7 @@ describe('SyncService', () => {
 
     const result = await storage.get(item.id);
 
-    expect(result?.status).toBe(SyncStatus.COMPLETED);
+    expect(result).toBeUndefined();
   });
 
   it('should mark item as failed when request returns a client error', async () => {

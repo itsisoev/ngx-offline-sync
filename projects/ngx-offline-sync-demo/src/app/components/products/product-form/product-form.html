@@ -1,0 +1,168 @@
+<div class="product-form">
+  <div class="product-form__header">
+    <div>
+      <h4>Product Manager</h4>
+
+      <p>Create and test products</p>
+    </div>
+
+    <div class="product-form__tools">
+      <div class="auto-create-group">
+        <button
+          type="button"
+          class="btn btn-outline-primary"
+          [disabled]="isSending() || isAutoFilling()"
+          (click)="autoCreate()"
+        >
+          @if (isSending()) {
+            <span
+              class="spinner-border spinner-border-sm me-2"
+              role="status"
+            ></span>
+
+            Sending...
+          } @else {
+            <i class="bi bi-lightning-fill me-1"></i>
+
+            Automatic create
+          }
+        </button>
+
+        <select
+          class="form-select auto-create-count"
+          [ngModel]="autoSendCount()"
+          (ngModelChange)="setAutoSendCount($event)"
+          [disabled]="isSending()"
+        >
+          <option [ngValue]="1">1x</option>
+          <option [ngValue]="2">2x</option>
+          <option [ngValue]="4">4x</option>
+          <option [ngValue]="10">10x</option>
+          <option [ngValue]="20">20x</option>
+          <option [ngValue]="50">50x</option>
+        </select>
+      </div>
+
+      <button
+        type="button"
+        class="btn btn-outline-primary"
+        [disabled]="isAutoFilling() || isSending()"
+        (click)="autoFill()"
+      >
+        @if (isAutoFilling()) {
+          <span
+            class="spinner-border spinner-border-sm me-2"
+            role="status"
+          ></span>
+
+          Loading...
+        } @else {
+          <i class="bi bi-magic me-1"></i>
+
+          Auto fill
+        }
+      </button>
+    </div>
+  </div>
+
+  <form
+    [formGroup]="productForm"
+    (ngSubmit)="submit()"
+    class="product-form__body"
+  >
+    <div class="row">
+      <div class="col-12">
+        <label class="form-label">
+          Title
+        </label>
+
+        <input
+          type="text"
+          class="form-control"
+          formControlName="title"
+          placeholder="Product title"
+        />
+
+        @if (
+          productForm.controls.title.invalid &&
+          productForm.controls.title.touched
+          ) {
+          <div class="field-error">
+            Title is required
+          </div>
+        }
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">
+          Price
+        </label>
+
+        <input
+          type="number"
+          class="form-control"
+          formControlName="price"
+          min="0"
+          step="0.01"
+          placeholder="0.00"
+        />
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">
+          Category
+        </label>
+
+        <input
+          type="text"
+          class="form-control"
+          formControlName="category"
+          placeholder="Category"
+        />
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">
+          Image URL
+        </label>
+
+        <input
+          type="url"
+          class="form-control"
+          formControlName="image"
+          placeholder="https://..."
+        />
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">
+          Description
+        </label>
+
+        <textarea
+          class="form-control"
+          rows="5"
+          formControlName="description"
+          placeholder="Product description"
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="product-form__footer">
+      <span class="request-info">
+        Automatic mode:
+        <strong>{{ autoSendCount() }} request(s)</strong>
+      </span>
+
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="productForm.invalid || isSending()"
+      >
+        <i class="bi bi-check-lg me-1"></i>
+
+        Create product
+      </button>
+    </div>
+  </form>
+</div>
