@@ -74,7 +74,7 @@ describe('SyncService', () => {
 
     await queue.enqueue(item);
 
-    await syncService.sync();
+    await syncService.sync(item);
 
     const result = await storage.get(item.id);
 
@@ -101,7 +101,7 @@ describe('SyncService', () => {
 
     await queue.enqueue(item);
 
-    await syncService.sync();
+    await syncService.sync(item);
 
     const result = await storage.get(item.id);
 
@@ -129,7 +129,7 @@ describe('SyncService', () => {
     });
 
     await queue.enqueue(item);
-    await syncService.sync();
+    await syncService.sync(item);
 
     const result = await storage.get(item.id);
 
@@ -157,7 +157,7 @@ describe('SyncService', () => {
 
     await queue.enqueue(item);
 
-    await syncService.sync();
+    await syncService.sync(item);
 
     const result = await storage.get(item.id);
 
@@ -185,7 +185,7 @@ describe('SyncService', () => {
 
     await queue.enqueue(item);
 
-    await syncService.sync();
+    await syncService.sync(item);
 
     const result = await storage.get(item.id);
 
@@ -216,7 +216,7 @@ describe('SyncService', () => {
 
     await queue.enqueue(item);
 
-    await syncService.sync();
+    await syncService.sync(item);
 
     const result = await storage.get(item.id);
 

@@ -369,4 +369,33 @@ describe('QueueService', () => {
     expect(result?.id).toBe(item.id);
     expect(result?.status).toBe(SyncStatus.SYNCING);
   });
+
+  it('should dequeue a batch of items', async () => {
+    const items: IQueueItem[] = [
+      createQueueItem({
+        id: '1',
+        method: HttpMethod.POST,
+        url: '/test/1',
+      }),
+      createQueueItem({
+        id: '2',
+        method: HttpMethod.POST,
+        url: '/test/2',
+      }),
+      createQueueItem({
+        id: '3',
+        method: HttpMethod.POST,
+        url: '/test/3',
+      }),
+    ];
+
+    for (const item of items) {
+      await queue.enqueue(item);
+    }
+
+    const result = await queue.dequeueBatch(3);
+
+    expect(result).toHaveLength(3);
+    expect(result.every((item) => item.status === SyncStatus.SYNCING)).toBe(true);
+  });
 });

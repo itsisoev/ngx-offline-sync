@@ -1,5 +1,6 @@
-export interface ISyncService {
-  sync(): Promise<boolean>;
+import { IQueueItem } from '../../queue';
 
+export interface ISyncService {
+  sync(item: IQueueItem): Promise<void>;
   getNextRetryAt(): Promise<number | undefined>;
 }
