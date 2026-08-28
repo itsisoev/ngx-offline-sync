@@ -1,7 +1,4 @@
-import {
-  createEnvironmentInjector,
-  runInInjectionContext,
-} from '@angular/core';
+import { createEnvironmentInjector, runInInjectionContext } from '@angular/core';
 import { Subject } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 import { SyncCoordinatorService } from './sync-coordinator.service';
@@ -9,6 +6,7 @@ import { SyncService } from './sync.service';
 import { RetrySchedulerService } from './retry-scheduler.service';
 import { NetworkStatusService } from '../../network';
 import { OFFLINE_SYNC_CONFIG } from '../../config';
+import { IQueueItem, QueueService } from '../../queue';
 
 describe('SyncCoordinatorService', () => {
   function createCoordinator() {
@@ -17,6 +15,10 @@ describe('SyncCoordinatorService', () => {
     const networkStatus = {
       online$,
       isOnline: vi.fn(),
+    };
+
+    const queue = {
+      dequeueBatch: vi.fn(),
     };
 
     const syncService = {
@@ -37,6 +39,10 @@ describe('SyncCoordinatorService', () => {
         {
           provide: NetworkStatusService,
           useValue: networkStatus,
+        },
+        {
+          provide: QueueService,
+          useValue: queue,
         },
         {
           provide: SyncService,
@@ -61,6 +67,7 @@ describe('SyncCoordinatorService', () => {
     return {
       coordinator,
       online$,
+      queue,
       syncService,
       schedule,
       cancel,
@@ -69,10 +76,13 @@ describe('SyncCoordinatorService', () => {
   }
 
   it('should sync the queue when network becomes online', async () => {
-    const { coordinator, online$, syncService, parentInjector } = createCoordinator();
+    const { coordinator, online$, queue, syncService, parentInjector } = createCoordinator();
 
-    syncService.sync.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
+    const items = [{ id: '1' } as IQueueItem, { id: '2' } as IQueueItem];
 
+    queue.dequeueBatch.mockResolvedValueOnce(items).mockResolvedValueOnce([]);
+
+    syncService.sync.mockResolvedValue(undefined);
     syncService.getNextRetryAt.mockResolvedValue(undefined);
 
     coordinator.start();
@@ -80,17 +90,21 @@ describe('SyncCoordinatorService', () => {
     online$.next(true);
 
     await vi.waitFor(() => {
-      expect(syncService.sync).toHaveBeenCalledTimes(2);
+      expect(queue.dequeueBatch).toHaveBeenCalledTimes(2);
     });
 
-    expect(syncService.sync).toHaveBeenNthCalledWith(1);
-    expect(syncService.sync).toHaveBeenNthCalledWith(2);
+    expect(queue.dequeueBatch).toHaveBeenNthCalledWith(1, 2);
+    expect(queue.dequeueBatch).toHaveBeenNthCalledWith(2, 2);
+
+    expect(syncService.sync).toHaveBeenCalledTimes(2);
+    expect(syncService.sync).toHaveBeenNthCalledWith(1, items[0]);
+    expect(syncService.sync).toHaveBeenNthCalledWith(2, items[1]);
 
     parentInjector.destroy();
   });
 
   it('should not sync when network is offline', async () => {
-    const { coordinator, online$, syncService, parentInjector } = createCoordinator();
+    const { coordinator, online$, queue, syncService, parentInjector } = createCoordinator();
 
     coordinator.start();
 
@@ -98,15 +112,17 @@ describe('SyncCoordinatorService', () => {
 
     await Promise.resolve();
 
+    expect(queue.dequeueBatch).not.toHaveBeenCalled();
     expect(syncService.sync).not.toHaveBeenCalled();
 
     parentInjector.destroy();
   });
 
   it('should schedule the next retry', async () => {
-    const { coordinator, online$, syncService, schedule, parentInjector } = createCoordinator();
+    const { coordinator, online$, queue, syncService, schedule, parentInjector } =
+      createCoordinator();
 
-    syncService.sync.mockResolvedValueOnce(false).mockResolvedValueOnce(false);
+    queue.dequeueBatch.mockResolvedValue([]);
 
     syncService.getNextRetryAt.mockResolvedValue(Date.now() + 1000);
 
@@ -127,10 +143,10 @@ describe('SyncCoordinatorService', () => {
   });
 
   it('should stop listening when stopped', async () => {
-    const { coordinator, online$, syncService, cancel, parentInjector } = createCoordinator();
+    const { coordinator, online$, queue, syncService, cancel, parentInjector } =
+      createCoordinator();
 
-    syncService.sync.mockResolvedValue(false);
-
+    queue.dequeueBatch.mockResolvedValue([]);
     syncService.getNextRetryAt.mockResolvedValue(undefined);
 
     coordinator.start();
@@ -140,6 +156,7 @@ describe('SyncCoordinatorService', () => {
 
     await Promise.resolve();
 
+    expect(queue.dequeueBatch).not.toHaveBeenCalled();
     expect(syncService.sync).not.toHaveBeenCalled();
     expect(cancel).toHaveBeenCalledTimes(1);
 
@@ -147,84 +164,89 @@ describe('SyncCoordinatorService', () => {
   });
 
   it('should respect the configured batch size limit', async () => {
-    const { coordinator, online$, syncService, parentInjector } = createCoordinator();
+    const { coordinator, online$, queue, syncService, parentInjector } = createCoordinator();
 
-    let resolveFirst!: (value: boolean) => void;
-    let resolveSecond!: (value: boolean) => void;
+    const firstBatch = [{ id: '1' } as IQueueItem, { id: '2' } as IQueueItem];
 
-    const firstSync = new Promise<boolean>((resolve) => {
-      resolveFirst = resolve;
-    });
+    const secondBatch = [{ id: '3' } as IQueueItem, { id: '4' } as IQueueItem];
 
-    const secondSync = new Promise<boolean>((resolve) => {
-      resolveSecond = resolve;
-    });
+    queue.dequeueBatch
+      .mockResolvedValueOnce(firstBatch)
+      .mockResolvedValueOnce(secondBatch)
+      .mockResolvedValueOnce([]);
 
-    syncService.sync
-      .mockReturnValueOnce(firstSync)
-      .mockReturnValueOnce(secondSync)
-      .mockResolvedValueOnce(false)
-      .mockResolvedValueOnce(false);
+    syncService.sync.mockResolvedValue(undefined);
+    syncService.getNextRetryAt.mockResolvedValue(undefined);
 
     coordinator.start();
 
     online$.next(true);
 
     await vi.waitFor(() => {
-      expect(syncService.sync).toHaveBeenCalledTimes(2);
+      expect(queue.dequeueBatch).toHaveBeenCalledTimes(3);
     });
 
-    resolveFirst(true);
-    resolveSecond(true);
+    expect(queue.dequeueBatch).toHaveBeenNthCalledWith(1, 2);
+    expect(queue.dequeueBatch).toHaveBeenNthCalledWith(2, 2);
+    expect(queue.dequeueBatch).toHaveBeenNthCalledWith(3, 2);
 
-    await vi.waitFor(() => {
-      expect(syncService.sync).toHaveBeenCalledTimes(4);
-    });
+    expect(syncService.sync).toHaveBeenCalledTimes(4);
 
     parentInjector.destroy();
   });
 
   it('should not start the next batch before the current batch is completed', async () => {
-    const { coordinator, online$, syncService, parentInjector } = createCoordinator();
+    const { coordinator, online$, queue, syncService, parentInjector } = createCoordinator();
 
-    let resolveFirst!: (value: boolean) => void;
-    let resolveSecond!: (value: boolean) => void;
+    const firstBatch = [{ id: '1' } as IQueueItem, { id: '2' } as IQueueItem];
 
-    const firstSync = new Promise<boolean>((resolve) => {
+    const secondBatch = [{ id: '3' } as IQueueItem, { id: '4' } as IQueueItem];
+
+    let resolveFirst!: () => void;
+    let resolveSecond!: () => void;
+
+    const firstSync = new Promise<void>((resolve) => {
       resolveFirst = resolve;
     });
 
-    const secondSync = new Promise<boolean>((resolve) => {
+    const secondSync = new Promise<void>((resolve) => {
       resolveSecond = resolve;
     });
+
+    queue.dequeueBatch
+      .mockResolvedValueOnce(firstBatch)
+      .mockResolvedValueOnce(secondBatch)
+      .mockResolvedValueOnce([]);
 
     syncService.sync
       .mockReturnValueOnce(firstSync)
       .mockReturnValueOnce(secondSync)
-      .mockResolvedValueOnce(false)
-      .mockResolvedValueOnce(false);
+      .mockResolvedValue(undefined);
+
+    syncService.getNextRetryAt.mockResolvedValue(undefined);
 
     coordinator.start();
 
     online$.next(true);
 
     await vi.waitFor(() => {
+      expect(queue.dequeueBatch).toHaveBeenCalledTimes(1);
       expect(syncService.sync).toHaveBeenCalledTimes(2);
     });
 
+    expect(queue.dequeueBatch).toHaveBeenCalledTimes(1);
     expect(syncService.sync).toHaveBeenCalledTimes(2);
 
-    resolveFirst(true);
-
-    await Promise.resolve();
-
-    expect(syncService.sync).toHaveBeenCalledTimes(2);
-
-    resolveSecond(true);
+    resolveFirst();
+    resolveSecond();
 
     await vi.waitFor(() => {
-      expect(syncService.sync).toHaveBeenCalledTimes(4);
+      expect(queue.dequeueBatch).toHaveBeenCalledTimes(3);
     });
+
+    expect(queue.dequeueBatch).toHaveBeenNthCalledWith(1, 2);
+    expect(queue.dequeueBatch).toHaveBeenNthCalledWith(2, 2);
+    expect(queue.dequeueBatch).toHaveBeenNthCalledWith(3, 2);
 
     parentInjector.destroy();
   });

@@ -114,4 +114,31 @@ export class QueueService implements IQueue {
 
     return items.length;
   }
+
+  async dequeueBatch(size: number): Promise<IQueueItem[]> {
+    const items = await this.getPending();
+
+    const availableItems = items.filter((item) => !this.reservedIds.has(item.id)).slice(0, size);
+
+    if (availableItems.length === 0) {
+      return [];
+    }
+
+    const reservedItems: IQueueItem[] = [];
+
+    for (const item of availableItems) {
+      this.reservedIds.add(item.id);
+
+      await this.update(item.id, {
+        status: SyncStatus.SYNCING,
+      });
+
+      reservedItems.push({
+        ...item,
+        status: SyncStatus.SYNCING,
+      });
+    }
+
+    return reservedItems;
+  }
 }

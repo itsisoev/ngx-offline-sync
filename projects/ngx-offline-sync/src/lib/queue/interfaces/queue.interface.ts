@@ -10,4 +10,5 @@ export interface IQueue {
   getNextRetryAt(): Promise<number | undefined>;
   clear(): Promise<void>;
   size(): Promise<number>;
+  dequeueBatch(size: number): Promise<IQueueItem[]>;
 }

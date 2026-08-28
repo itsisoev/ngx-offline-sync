@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { NetworkStatusService } from '../../network';
+import { QueueService } from '../../queue';
 import { SyncService } from './sync.service';
 import { RetrySchedulerService } from './retry-scheduler.service';
 import { OFFLINE_SYNC_CONFIG } from '../../config';
@@ -8,6 +9,7 @@ import { OFFLINE_SYNC_CONFIG } from '../../config';
 @Injectable()
 export class SyncCoordinatorService {
   private readonly networkStatus = inject(NetworkStatusService);
+  private readonly queue = inject(QueueService);
   private readonly syncService = inject(SyncService);
   private readonly retryScheduler = inject(RetrySchedulerService);
 
@@ -44,6 +46,8 @@ export class SyncCoordinatorService {
 
     this.syncing = true;
 
+    console.log('[OfflineSync] START:', new Date().toISOString());
+
     try {
       while (true) {
         const processed = await this.syncBatch();
@@ -55,6 +59,8 @@ export class SyncCoordinatorService {
 
       await this.scheduleNextRetry();
     } finally {
+      console.log('[OfflineSync] END:', new Date().toISOString());
+
       this.syncing = false;
     }
   }
@@ -74,10 +80,14 @@ export class SyncCoordinatorService {
   private async syncBatch(): Promise<boolean> {
     const batchSize = this.config.batchSize ?? 1;
 
-    const workers = Array.from({ length: batchSize }, () => this.syncService.sync());
+    const items = await this.queue.dequeueBatch(batchSize);
 
-    const results = await Promise.all(workers);
+    if (items.length === 0) {
+      return false;
+    }
 
-    return results.some(Boolean);
+    await Promise.all(items.map((item) => this.syncService.sync(item)));
+
+    return true;
   }
 }
