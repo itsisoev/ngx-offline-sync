@@ -7,12 +7,8 @@ import { Product } from './product.interface';
 export class ProductService {
   private readonly http = inject(HttpClient);
 
-  // private readonly url = 'https://fakestoreapi.com/products';
-
-  /*
-  * Не существующий API
-  */
-  private readonly url = 'https://fakestoreapi.com/invalid-endpoint';
+  private readonly url = 'https://fakestoreapi.com/products';
+  // private readonly url = 'https://fakestoreapi.com/invalid-endpoint';
 
   getProducts(): Observable<Product[]> {
     return this.http.get<Product[]>(this.url);

@@ -1,29 +1,182 @@
 # ngx-offline-sync
 
 <div>
-  <img src="https://img.shields.io/npm/dt/ngx-offline-sync"  alt="npm"/>
+  <img src="https://img.shields.io/npm/dt/ngx-offline-sync" alt="npm downloads"/>
   <a href="https://www.npmjs.com/package/ngx-offline-sync">
-    <img src="https://img.shields.io/badge/npm-ngx--offline--sync-CB3837?logo=npm&logoColor=white" alt="npm package" />
+    <img src="https://img.shields.io/badge/npm-ngx--offline--sync-CB3837?logo=npm&logoColor=white" alt="npm package"/>
   </a>
-  <img src="https://img.shields.io/github/stars/itsisoev/ngx-offline-sync"  alt="github"/>
+  <img src="https://img.shields.io/github/stars/itsisoev/ngx-offline-sync" alt="GitHub stars"/>
 </div>
-
-Библиотека для Angular, которая автоматически сохраняет HTTP-запросы при отсутствии интернет-соединения и синхронизирует их после восстановления сети.
 
 **Документация:** [English](../../README.md) · Русский · [日本語](../ja/README.md)
 
+> **Offline-first синхронизация HTTP-запросов для Angular.**
+
+`ngx-offline-sync` — open-source библиотека для Angular, которая помогает приложениям корректно работать при временной потере интернет-соединения.
+
+Когда приложение находится офлайн, поддерживаемые HTTP-запросы автоматически помещаются в локальную очередь и сохраняются в **IndexedDB**. После восстановления соединения библиотека самостоятельно запускает синхронизацию и выполняет накопленные запросы.
+
+Вам не нужно создавать отдельную очередь, самостоятельно управлять IndexedDB или писать собственную логику восстановления соединения — библиотека берёт эту работу на себя, сохраняя привычный API Angular `HttpClient`.
+
+## Как это работает
+
+### Онлайн
+
+<p align="center">
+  <img src="../assets/gifs/01-online.gif" alt="ngx-offline-sync — работа без сети" />
+</p>
+
+При наличии интернет-соединения запросы выполняются обычным способом через Angular `HttpClient`.
+
+### Офлайн
+
+<p align="center">
+  <img src="../assets/gifs/02-offline.gif" alt="ngx-offline-sync — синхронизация после восстановления сети" />
+</p>
+
+Когда соединение отсутствует, поддерживаемые запросы не теряются. Они сохраняются локально и помещаются в очередь ожидания.
+
+### Восстановление соединения
+
+<p align="center">
+  <img src="../assets/gifs/03-sync.gif" alt="ngx-offline-sync — синхронизация после восстановления сети" />
+</p>
+
+После восстановления соединения библиотека автоматически начинает обработку очереди и синхронизирует сохранённые запросы.
+
+## Возможности
+
+*  **Автоматическая очередь запросов** — поддерживаемые HTTP-запросы автоматически сохраняются при отсутствии сети.
+*  **IndexedDB** — очередь хранится локально и сохраняется между перезагрузками страницы.
+*  **Автоматическая синхронизация** — накопленные запросы обрабатываются после восстановления соединения.
+*  **Batch processing** — несколько запросов могут обрабатываться параллельно с помощью `batchSize`.
+*  **Повторные попытки** — неуспешные запросы могут автоматически повторяться согласно политике повторных попыток.
+*  **Angular HTTP interceptor** — библиотека интегрируется непосредственно с `HttpClient`.
+*  **Без дополнительного API** — для отправки запросов используется обычный `HttpClient`.
+*  **Настраиваемая синхронизация** — поведение очереди и синхронизации можно изменять через конфигурацию.
+
+## Поддерживаемые HTTP-методы
+
+На данный момент библиотека помещает в очередь следующие HTTP-методы:
+
+* `POST`
+* `PUT`
+* `PATCH`
+* `DELETE`
+
+`GET`-запросы не сохраняются в offline queue.
+
+Подробнее: [Ограничения](guides/limitations.md).
+
+## Установка
+
+```bash
+npm install ngx-offline-sync
+```
+
+## Подключение
+
+Добавьте `provideOfflineSync()` и `offlineSyncInterceptor` в конфигурацию приложения:
+
+```typescript
+import { ApplicationConfig } from '@angular/core';
+import {
+  provideHttpClient,
+  withInterceptors,
+} from '@angular/common/http';
+
+import {
+  provideOfflineSync,
+  offlineSyncInterceptor,
+} from 'ngx-offline-sync';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideOfflineSync(),
+
+    provideHttpClient(
+      withInterceptors([
+        offlineSyncInterceptor,
+      ]),
+    ),
+  ],
+};
+```
+
+После этого библиотека самостоятельно управляет очередью, локальным хранилищем, синхронизацией и повторными попытками.
+
+## Использование
+
+Для отправки запросов не требуется специальный API. Используйте обычный Angular `HttpClient`:
+
+```typescript
+this.http.post('/api/products', product).subscribe();
+```
+
+При наличии сети запрос выполняется как обычно.
+
+Если соединение отсутствует, поддерживаемый запрос автоматически сохраняется в очереди и будет обработан после восстановления сети.
+
+## Конфигурация
+
+Поведение библиотеки можно настроить через `provideOfflineSync()`:
+
+```typescript
+provideOfflineSync({
+  batchSize: 5,
+});
+```
+
+Например, `batchSize` определяет максимальное количество запросов, которые могут обрабатываться параллельно в рамках одного батча.
+
+Подробнее:
+
+* [Конфигурация](guides/configuration/index.md)
+* [batchSize](guides/configuration/batch-size.md)
+
+## Статусы запросов
+
+Каждый запрос в очереди имеет определённое состояние:
+
+```text
+PENDING → SYNCING → COMPLETED
+```
+
+При ошибке запрос может быть возвращён в очередь для повторной попытки:
+
+```text
+SYNCING → PENDING → Retry
+```
+
+Если дальнейшие попытки невозможны:
+
+```text
+SYNCING → FAILED
+```
+
+Подробнее: [Статусы запросов](guides/statuses.md).
+
 ## Документация
 
-- [Подключение](guides/setup.md)
-- [Использование](guides/usage.md)
-- [Как это работает](guides/how-it-works.md)
-- [Конфигурация](guides/configuration/index.md)
-  - [batchSize](guides/configuration/batch-size.md)
-- [Статусы запросов](guides/statuses.md)
-- [Повторные попытки](guides/retries.md)
-- [Архитектура](guides/architecture.md)
-- [Планы развития](guides/roadmap.md)
-- [Ограничения](guides/limitations.md)
+### Основные разделы
+
+* [Подключение](guides/setup.md) — установка и регистрация провайдеров
+* [Использование](guides/usage.md) — работа с `HttpClient`
+* [Как это работает](guides/how-it-works.md) — жизненный цикл запроса
+* [Конфигурация](guides/configuration/index.md) — доступные параметры `provideOfflineSync()`
+
+  * [batchSize](guides/configuration/batch-size.md) — параллельная обработка очереди
+* [Статусы запросов](guides/statuses.md) — состояния и переходы запросов
+* [Повторные попытки](guides/retries.md) — работа `RetryPolicy`
+* [Архитектура](guides/architecture.md) — внутренние компоненты и их взаимодействие
+* [Планы развития](guides/roadmap.md) — дальнейшее развитие проекта
+* [Ограничения](guides/limitations.md) — текущие ограничения библиотеки
+
+## Статус проекта
+
+`ngx-offline-sync` находится в активной разработке.
+
+Проект постепенно развивается в сторону более гибкой конфигурации, улучшения обработки ошибок и сетевых состояний, расширения тестового покрытия и дальнейшего улучшения документации.
 
 ## Лицензия
 
