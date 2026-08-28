@@ -1,6 +1,6 @@
 {
   "name": "ngx-offline-sync",
-  "version": "1.0.8",
+  "version": "1.1.0",
   "description": "Offline HTTP request synchronization for Angular applications.",
   "author": {
     "name": "Daler",
