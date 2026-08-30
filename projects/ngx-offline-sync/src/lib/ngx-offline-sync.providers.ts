@@ -10,12 +10,22 @@ import { IndexedDbStorage } from './storage';
 import { RetryPolicy, SyncService, RetrySchedulerService, SyncCoordinatorService } from './sync';
 import { NetworkStatusService } from './network';
 import { OFFLINE_SYNC_CONFIG, IOfflineSyncConfig } from './config';
+import {
+  LoggerService,
+  ConsoleLogTransport,
+  LOG_TRANSPORT,
+  LogLevel,
+  LogLanguage,
+} from './logging';
 
-export function provideOfflineSync(
-  config: IOfflineSyncConfig = {},
-): EnvironmentProviders {
+export function provideOfflineSync(config: IOfflineSyncConfig = {}): EnvironmentProviders {
   return makeEnvironmentProviders([
     NetworkStatusService,
+    LoggerService,
+    {
+      provide: LOG_TRANSPORT,
+      useClass: ConsoleLogTransport,
+    },
     {
       provide: IndexedDbStorage,
       useFactory: () => new IndexedDbStorage<IQueueItem>(),
@@ -31,9 +41,13 @@ export function provideOfflineSync(
     },
     {
       provide: SyncService,
-      useFactory: (queue: QueueService, http: HttpClient, retryPolicy: RetryPolicy) =>
-        new SyncService(queue, http, retryPolicy),
-      deps: [QueueService, HttpClient, RetryPolicy],
+      useFactory: (
+        queue: QueueService,
+        http: HttpClient,
+        retryPolicy: RetryPolicy,
+        logger: LoggerService,
+      ) => new SyncService(queue, http, retryPolicy, logger),
+      deps: [QueueService, HttpClient, RetryPolicy, LoggerService],
     },
     RetrySchedulerService,
     SyncCoordinatorService,
@@ -42,6 +56,7 @@ export function provideOfflineSync(
       multi: true,
       useValue: () => {
         const coordinator = inject(SyncCoordinatorService);
+
         coordinator.start();
       },
     },
@@ -49,6 +64,8 @@ export function provideOfflineSync(
       provide: OFFLINE_SYNC_CONFIG,
       useValue: {
         batchSize: config.batchSize ?? 1,
+        logLevel: config.logLevel ?? LogLevel.NONE,
+        language: config.language ?? LogLanguage.EN,
       },
     },
   ]);

@@ -1,7 +1,10 @@
-import { Service } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
+import { LogEvent, ILogger, LoggerService } from '../../logging';
 
-@Service()
+@Injectable()
 export class RetrySchedulerService {
+  private readonly logger = inject(LoggerService);
+
   private timeoutId?: ReturnType<typeof setTimeout>;
 
   schedule(delay: number, callback: () => void | Promise<void>): void {
@@ -9,6 +12,10 @@ export class RetrySchedulerService {
 
     this.timeoutId = setTimeout(async () => {
       this.timeoutId = undefined;
+
+      this.logger.info(LogEvent.RETRY_STARTED, {
+        delay,
+      });
 
       await callback();
     }, delay);

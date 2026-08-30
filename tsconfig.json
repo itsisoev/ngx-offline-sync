@@ -7,6 +7,8 @@
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
     "paths": {
       "ngx-offline-sync": ["./dist/ngx-offline-sync"]
     },

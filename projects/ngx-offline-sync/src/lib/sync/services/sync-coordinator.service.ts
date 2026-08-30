@@ -1,10 +1,14 @@
 import { inject, Injectable } from '@angular/core';
 import { Subscription } from 'rxjs';
+
 import { NetworkStatusService } from '../../network';
 import { QueueService } from '../../queue';
 import { SyncService } from './sync.service';
 import { RetrySchedulerService } from './retry-scheduler.service';
 import { OFFLINE_SYNC_CONFIG } from '../../config';
+import { LogEvent, LoggerService } from '../../logging';
+import { SyncResult } from '../enums/sync-result.enum';
+import { ISyncStats } from '../interfaces/sync-stats.interface';
 
 @Injectable()
 export class SyncCoordinatorService {
@@ -12,6 +16,7 @@ export class SyncCoordinatorService {
   private readonly queue = inject(QueueService);
   private readonly syncService = inject(SyncService);
   private readonly retryScheduler = inject(RetrySchedulerService);
+  private readonly logger = inject(LoggerService);
 
   private readonly config = inject(OFFLINE_SYNC_CONFIG);
 
@@ -46,22 +51,89 @@ export class SyncCoordinatorService {
 
     this.syncing = true;
 
-    console.log('[OfflineSync] START:', new Date().toISOString());
+    const startedAt = Date.now();
 
     try {
-      while (true) {
-        const processed = await this.syncBatch();
+      const total = await this.queue.size();
 
-        if (!processed) {
+      if (total === 0) {
+        this.logger.info(LogEvent.QUEUE_EMPTY);
+        return;
+      }
+
+      const stats: ISyncStats = {
+        total,
+        processed: 0,
+        successful: 0,
+        failed: 0,
+        retried: 0,
+        startedAt,
+      };
+
+      this.logger.info(LogEvent.SYNC_STARTED, {
+        startedAt,
+      });
+
+      this.logger.info(LogEvent.SYNC_PROCESSING, {
+        count: total,
+      });
+
+      while (true) {
+        const results = await this.syncBatch();
+
+        if (results.length === 0) {
           break;
         }
+
+        this.updateStats(stats, results);
+
+        this.logger.info(LogEvent.SYNC_PROGRESS, {
+          processed: stats.processed,
+          total: stats.total,
+          successful: stats.successful,
+          failed: stats.failed,
+          retried: stats.retried,
+        });
       }
 
       await this.scheduleNextRetry();
-    } finally {
-      console.log('[OfflineSync] END:', new Date().toISOString());
 
+      stats.completedAt = Date.now();
+      stats.duration = stats.completedAt - stats.startedAt;
+
+      this.logger.success(LogEvent.SYNC_COMPLETED, {
+        duration: stats.duration,
+      });
+
+      this.logger.info(LogEvent.SYNC_STATS, {
+        processed: stats.processed,
+        successful: stats.successful,
+        failed: stats.failed,
+        retried: stats.retried,
+        duration: stats.duration,
+      });
+    } finally {
       this.syncing = false;
+    }
+  }
+
+  private updateStats(stats: ISyncStats, results: SyncResult[]): void {
+    stats.processed += results.length;
+
+    for (const result of results) {
+      switch (result) {
+        case SyncResult.SUCCESS:
+          stats.successful++;
+          break;
+
+        case SyncResult.RETRY:
+          stats.retried++;
+          break;
+
+        case SyncResult.FAILED:
+          stats.failed++;
+          break;
+      }
     }
   }
 
@@ -74,20 +146,23 @@ export class SyncCoordinatorService {
 
     const delay = Math.max(0, nextRetryAt - Date.now());
 
+    this.logger.info(LogEvent.RETRY_SCHEDULED, {
+      delay,
+      nextRetryAt,
+    });
+
     this.retryScheduler.schedule(delay, () => this.syncQueue());
   }
 
-  private async syncBatch(): Promise<boolean> {
+  private async syncBatch(): Promise<SyncResult[]> {
     const batchSize = this.config.batchSize ?? 1;
 
     const items = await this.queue.dequeueBatch(batchSize);
 
     if (items.length === 0) {
-      return false;
+      return [];
     }
 
-    await Promise.all(items.map((item) => this.syncService.sync(item)));
-
-    return true;
+    return Promise.all(items.map((item) => this.syncService.sync(item)));
   }
 }
