@@ -18,6 +18,25 @@ When the application goes offline, supported HTTP requests are automatically add
 
 You don't need to build your own request queue, manage IndexedDB, or implement network recovery logic — `ngx-offline-sync` handles the synchronization infrastructure while keeping the familiar Angular `HttpClient` API.
 
+## What's New
+
+### August 30, 2026
+
+Today, work was completed on the new logging system and synchronization improvements.
+
+The following changes will be available in the npm package with the `v1.1.1` release:
+
+* **Configurable logging** — added a logging system with support for `LogLevel`.
+* **Language support** — log messages are now available in English and Russian through `LogLanguage`.
+* **Logging events** — added typed `LogEvent` values for tracking queue and synchronization activity.
+* **Synchronization statistics** — added statistics for processed, successful, failed, and retried requests.
+* **Configurable Log Transport** — added the ability to replace the default `ConsoleLogTransport` with a custom implementation.
+* **Improved retry logging** — added events for scheduling and starting retry attempts.
+* **Additional test coverage** — added unit tests for the logging system and related services.
+
+> These changes are currently under development and will be published in the npm package
+> with the `v1.1.1` release.
+
 ## How it works
 
 ### Online
@@ -50,10 +69,15 @@ Once the connection is restored, the library automatically starts processing the
 * **IndexedDB persistence** — queued requests are stored locally and survive page reloads.
 * **Automatic synchronization** — queued requests are processed after the connection is restored.
 * **Batch processing** — multiple requests can be processed in parallel using `batchSize`.
-* **Automatic retries** — failed requests can be retried according to the retry policy.
-* **Angular HTTP interceptor** — integrates directly with Angular's `HttpClient`.
-* **No special API** — continue using `HttpClient` as usual.
-* **Configurable synchronization** — queue and synchronization behavior can be configured through `provideOfflineSync()`.
+* **Automatic retries** — failed requests can be retried automatically according to the retry policy.
+* **Angular HTTP interceptor** — the library integrates directly with `HttpClient`.
+* **No special API** — the regular `HttpClient` is used to send requests.
+* **Configurable synchronization** — queue and synchronization behavior can be customized through configuration.
+* **Configurable logging** — logging verbosity can be set using `LogLevel`.
+* **Multiple logging languages** — log messages support English and Russian via `LogLanguage`.
+* **Logging events** — the library exposes typed events for tracking queue and sync state.
+* **Sync statistics** — the library collects data on processed, successful, failed, and retried requests.
+* **Configurable log transport** — the default `ConsoleLogTransport` can be replaced with a custom implementation via `LOG_TRANSPORT`.
 
 ## Supported HTTP methods
 
@@ -159,6 +183,7 @@ See [Request statuses](docs/en/guides/statuses.md) and [Retries](docs/en/guides/
 * [Configuration](docs/en/guides/configuration/index.md) — available `provideOfflineSync()` options
 
   * [batchSize](docs/en/guides/configuration/batch-size.md) — parallel queue processing
+  * [logLevel and language](docs/en/guides/configuration/logging.md) — logging configuration
 * [Request statuses](docs/en/guides/statuses.md) — synchronization states and transitions
 * [Retries](docs/en/guides/retries.md) — how `RetryPolicy` works
 * [Architecture](docs/en/guides/architecture.md) — internal services and their interactions
