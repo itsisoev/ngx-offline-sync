@@ -8,6 +8,8 @@ import { IQueueItem } from '../../queue';
 import { IStorage } from '../../storage';
 import { HttpMethod, SyncStatus } from '../../core';
 import { RetryPolicy } from '../policies/retry.policy';
+import { ILogger, LogEvent } from '../../logging';
+import { SyncResult } from '../enums/sync-result.enum';
 
 class FakeStorage implements IStorage<IQueueItem> {
   private readonly items = new Map<string, IQueueItem>();
@@ -55,13 +57,24 @@ class FakeHttpClient {
   }
 }
 
+class FakeLogger implements ILogger {
+  info(_event: LogEvent, _context?: Record<string, unknown>): void {}
+
+  success(_event: LogEvent, _context?: Record<string, unknown>): void {}
+
+  warning(_event: LogEvent, _context?: Record<string, unknown>): void {}
+
+  error(_event: LogEvent, _context?: Record<string, unknown>): void {}
+}
+
 describe('SyncService', () => {
-  it('should remove item when request succeeds', async () => {
+  it('should remove item and return SUCCESS when request succeeds', async () => {
     const storage = new FakeStorage();
     const queue = new QueueService(storage);
     const http = new FakeHttpClient();
+    const logger = new FakeLogger();
 
-    const syncService = new SyncService(queue, http as HttpClient, new RetryPolicy());
+    const syncService = new SyncService(queue, http as HttpClient, new RetryPolicy(), logger);
 
     const item = createQueueItem({
       id: 'request-1',
@@ -74,24 +87,27 @@ describe('SyncService', () => {
 
     await queue.enqueue(item);
 
-    await syncService.sync(item);
+    const result = await syncService.sync(item);
 
-    const result = await storage.get(item.id);
+    expect(result).toBe(SyncResult.SUCCESS);
 
-    expect(result).toBeUndefined();
+    const storedItem = await storage.get(item.id);
+
+    expect(storedItem).toBeUndefined();
   });
 
-  it('should mark item as failed when request returns a client error', async () => {
+  it('should mark item as failed and return FAILED when request returns a client error', async () => {
     const storage = new FakeStorage();
     const queue = new QueueService(storage);
     const http = new FakeHttpClient();
+    const logger = new FakeLogger();
 
     http.error = new HttpErrorResponse({
       status: 400,
       statusText: 'Bad Request',
     });
 
-    const syncService = new SyncService(queue, http as HttpClient, new RetryPolicy());
+    const syncService = new SyncService(queue, http as HttpClient, new RetryPolicy(), logger);
 
     const item = createQueueItem({
       id: 'request-1',
@@ -101,53 +117,34 @@ describe('SyncService', () => {
 
     await queue.enqueue(item);
 
-    await syncService.sync(item);
+    const result = await syncService.sync(item);
 
-    const result = await storage.get(item.id);
+    expect(result).toBe(SyncResult.FAILED);
 
-    expect(result?.status).toBe(SyncStatus.FAILED);
-    expect(result?.attempts).toBe(1);
-    expect(result?.error).toBeDefined();
+    const storedItem = await storage.get(item.id);
+
+    expect(storedItem?.status).toBe(SyncStatus.FAILED);
+    expect(storedItem?.attempts).toBe(1);
+    expect(storedItem?.error).toBeDefined();
   });
 
-  it('should return item to pending when request returns a server error', async () => {
+  it('should return RETRY and schedule next attempt when request returns a server error', async () => {
     const storage = new FakeStorage();
     const queue = new QueueService(storage);
     const http = new FakeHttpClient();
+    const logger = new FakeLogger();
 
     http.error = new HttpErrorResponse({
       status: 500,
       statusText: 'Internal Server Error',
     });
 
-    const syncService = new SyncService(queue, http as HttpClient, new RetryPolicy());
-
-    const item = createQueueItem({
-      id: 'request-1',
-      method: HttpMethod.POST,
-      url: '/posts',
-    });
-
-    await queue.enqueue(item);
-    await syncService.sync(item);
-
-    const result = await storage.get(item.id);
-
-    expect(result?.status).toBe(SyncStatus.PENDING);
-    expect(result?.attempts).toBe(1);
-  });
-
-  it('should return item to pending when request returns a server error', async () => {
-    const storage = new FakeStorage();
-    const queue = new QueueService(storage);
-    const http = new FakeHttpClient();
-
-    http.error = new HttpErrorResponse({
-      status: 500,
-      statusText: 'Internal Server Error',
-    });
-
-    const syncService = new SyncService(queue, http as HttpClient, new RetryPolicy(3, 1000));
+    const syncService = new SyncService(
+      queue,
+      http as HttpClient,
+      new RetryPolicy(3, 1000),
+      logger,
+    );
 
     const item = createQueueItem({
       id: 'request-1',
@@ -157,25 +154,33 @@ describe('SyncService', () => {
 
     await queue.enqueue(item);
 
-    await syncService.sync(item);
+    const result = await syncService.sync(item);
 
-    const result = await storage.get(item.id);
+    expect(result).toBe(SyncResult.RETRY);
 
-    expect(result?.status).toBe(SyncStatus.PENDING);
-    expect(result?.attempts).toBe(1);
-    expect(result?.nextRetryAt).toBeDefined();
+    const storedItem = await storage.get(item.id);
+
+    expect(storedItem?.status).toBe(SyncStatus.PENDING);
+    expect(storedItem?.attempts).toBe(1);
+    expect(storedItem?.nextRetryAt).toBeDefined();
   });
 
-  it('should return item to pending when a network error occurs', async () => {
+  it('should return RETRY when a network error occurs', async () => {
     const storage = new FakeStorage();
     const queue = new QueueService(storage);
     const http = new FakeHttpClient();
+    const logger = new FakeLogger();
 
     http.error = new HttpErrorResponse({
       status: 0,
     });
 
-    const syncService = new SyncService(queue, http as HttpClient, new RetryPolicy(3, 1000));
+    const syncService = new SyncService(
+      queue,
+      http as HttpClient,
+      new RetryPolicy(3, 1000),
+      logger,
+    );
 
     const item = createQueueItem({
       id: 'request-1',
@@ -185,26 +190,34 @@ describe('SyncService', () => {
 
     await queue.enqueue(item);
 
-    await syncService.sync(item);
+    const result = await syncService.sync(item);
 
-    const result = await storage.get(item.id);
+    expect(result).toBe(SyncResult.RETRY);
 
-    expect(result?.status).toBe(SyncStatus.PENDING);
-    expect(result?.attempts).toBe(1);
-    expect(result?.nextRetryAt).toBeDefined();
+    const storedItem = await storage.get(item.id);
+
+    expect(storedItem?.status).toBe(SyncStatus.PENDING);
+    expect(storedItem?.attempts).toBe(1);
+    expect(storedItem?.nextRetryAt).toBeDefined();
   });
 
-  it('should mark item as failed after maximum attempts', async () => {
+  it('should return FAILED after maximum attempts', async () => {
     const storage = new FakeStorage();
     const queue = new QueueService(storage);
     const http = new FakeHttpClient();
+    const logger = new FakeLogger();
 
     http.error = new HttpErrorResponse({
       status: 500,
       statusText: 'Internal Server Error',
     });
 
-    const syncService = new SyncService(queue, http as HttpClient, new RetryPolicy(3, 1000));
+    const syncService = new SyncService(
+      queue,
+      http as HttpClient,
+      new RetryPolicy(3, 1000),
+      logger,
+    );
 
     const item = createQueueItem({
       id: 'request-1',
@@ -216,12 +229,14 @@ describe('SyncService', () => {
 
     await queue.enqueue(item);
 
-    await syncService.sync(item);
+    const result = await syncService.sync(item);
 
-    const result = await storage.get(item.id);
+    expect(result).toBe(SyncResult.FAILED);
 
-    expect(result?.status).toBe(SyncStatus.FAILED);
-    expect(result?.attempts).toBe(3);
-    expect(result?.nextRetryAt).toBeUndefined();
+    const storedItem = await storage.get(item.id);
+
+    expect(storedItem?.status).toBe(SyncStatus.FAILED);
+    expect(storedItem?.attempts).toBe(3);
+    expect(storedItem?.nextRetryAt).toBeUndefined();
   });
 });

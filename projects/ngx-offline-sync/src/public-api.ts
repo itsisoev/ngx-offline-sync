@@ -9,3 +9,4 @@ export * from './lib/queue';
 export * from './lib/storage';
 export * from './lib/sync';
 export * from './lib/network';
+export * from './lib/logging';

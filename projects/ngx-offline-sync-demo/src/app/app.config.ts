@@ -2,7 +2,12 @@ import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { offlineSyncInterceptor, provideOfflineSync } from 'ngx-offline-sync';
+import {
+  offlineSyncInterceptor,
+  provideOfflineSync,
+  LogLevel,
+  LogLanguage,
+} from 'ngx-offline-sync';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -11,6 +16,8 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptors([offlineSyncInterceptor])),
     provideOfflineSync({
       batchSize: 10,
+      logLevel: LogLevel.ALL,
+      language: LogLanguage.RU,
     }),
   ],
 };

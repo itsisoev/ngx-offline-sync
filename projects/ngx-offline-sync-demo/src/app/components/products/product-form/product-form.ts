@@ -71,11 +71,11 @@ export class ProductForm {
 
     this.productService.createProduct(product).subscribe({
       next: (response) => {
-        console.log('Product created:', response);
+
       },
 
       error: (error) => {
-        console.error('Failed to create product:', error);
+
       },
     });
   }
