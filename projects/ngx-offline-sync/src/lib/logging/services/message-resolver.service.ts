@@ -3,9 +3,8 @@ import { IMessageResolver } from '../interfaces/message-resolver.interface';
 import { LogEvent } from '../enums/log-event.enum';
 import { LogLanguage } from '../enums/log-language.enum';
 import { OFFLINE_SYNC_CONFIG } from '../../config';
-
-import enMessages from '../messages/en.messages';
-import ruMessages from '../messages/ru.messages';
+import { ruMessages } from '../messages/ru.messages';
+import { enMessages } from '../messages/en.messages';
 
 @Injectable()
 export class MessageResolverService implements IMessageResolver {
