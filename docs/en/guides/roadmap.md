@@ -2,7 +2,7 @@
 
 **[← Back to overview](../../../README.md)**
 
-**Documentation:** English · [German](../../de/guides/roadmap.md) · [Русский](../../ru/guides/roadmap.md) · [日本語]()
+**Documentation:** English · [German](../../de/guides/roadmap.md) · [Русский](../../ru/guides/roadmap.md)
 
 The project is under active development. Planned improvements include:
 

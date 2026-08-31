@@ -2,7 +2,7 @@
 
 **[← Back to configuration](index.md)**
 
-**Documentation:** English · [German](../../../de/guides/configuration/logging.md) · [Русский](../../../ru/guides/configuration/logging.md) · [日本語]()
+**Documentation:** English · [German](../../../de/guides/configuration/logging.md) · [Русский](../../../ru/guides/configuration/logging.md) · [Deutsch](../../../de/guides/configuration/logging.md)
 
 | Option     | Type          | Default          |
 |------------|---------------|------------------|
@@ -33,7 +33,7 @@ The library logs internal events: queuing requests, starting and finishing sync,
 | `LogLevel.SUCCESS` | Success messages only       |
 | `LogLevel.ALL`     | All messages                |
 
-Levels are cumulative — each next level includes all the previous ones.
+Each log level controls which type of messages is written. `LogLevel.ALL` enables all message types.
 
 ## LogLanguage
 

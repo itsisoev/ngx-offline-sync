@@ -2,7 +2,7 @@
 
 **[← Zur Übersicht](../../../../README.md)**
 
-**Dokumentation:** [English](../../../en/guides/configuration/index.md) · [Русский](../../../ru/guides/configuration/index.md) · [日本語]()
+**Dokumentation:** Deutsch · [English](../../../en/guides/configuration/index.md) · [Русский](../../../ru/guides/configuration/index.md)
 
 `provideOfflineSync()` akzeptiert ein optionales Konfigurationsobjekt, das das Verhalten von Warteschlange, Synchronisierung und Protokollierung steuert.
 

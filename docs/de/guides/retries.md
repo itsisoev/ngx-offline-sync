@@ -2,7 +2,7 @@
 
 **[← Zur Übersicht](../../../README.md)**
 
-**Dokumentation:** [English](../../en/guides/retries.md) · [Русский](../../ru/guides/retries.md) · [日本語]()
+**Dokumentation:** Deutsch · [English](../../en/guides/retries.md) · [Русский](../../ru/guides/retries.md)
 
 Wenn die Synchronisierung fehlschlägt, übergibt die Bibliothek den Fehler an die `RetryPolicy`.
 

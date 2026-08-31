@@ -2,7 +2,7 @@
 
 **[← Zur Übersicht](../../../README.md)**
 
-**Dokumentation:** [English](../../en/guides/usage.md) · [Русский](../../ru/guides/usage.md) · [日本語]()
+**Dokumentation:**  Deutsch · [English](../../en/guides/usage.md) · [Русский](../../ru/guides/usage.md)
 
 Nach der Einrichtung benötigt die Bibliothek keine spezielle API zum Senden von Anfragen. Verwenden Sie einfach den regulären `HttpClient`:
 

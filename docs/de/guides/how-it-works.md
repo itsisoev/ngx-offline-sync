@@ -2,7 +2,7 @@
 
 **[← Zur Übersicht](../../../README.md)**
 
-**Dokumentation:** [English](../../en/guides/how-it-works.md) · [Русский](../../ru/guides/how-it-works.md) · [日本語]()
+**Dokumentation:** Deutsch · [English](../../en/guides/how-it-works.md) · [Русский](../../ru/guides/how-it-works.md)
 
 Abhängig vom Netzwerkstatus durchläuft die Bibliothek drei Szenarien.
 

@@ -2,7 +2,7 @@
 
 **[← Back to overview](../../../../README.md)**
 
-**Documentation:** English · [German](../../../de/guides/configuration/index.md) · [Русский](../../../ru/guides/configuration/index.md) · [日本語]()
+**Documentation:** English · [German](../../../de/guides/configuration/index.md) · [Русский](../../../ru/guides/configuration/index.md)
 
 `provideOfflineSync()` accepts an optional configuration object that controls queue, synchronization, and logging behavior.
 

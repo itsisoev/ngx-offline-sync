@@ -2,7 +2,7 @@
 
 **[← Back to overview](../../../README.md)**
 
-**Documentation:** English · [German](../../de/guides/statuses.md) · [Русский](../../ru/guides/statuses.md) · [日本語]()
+**Documentation:** English · [German](../../de/guides/statuses.md) · [Русский](../../ru/guides/statuses.md)
 
 Each request in the queue has one of the following statuses:
 
