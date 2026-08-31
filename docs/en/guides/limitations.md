@@ -3,7 +3,7 @@
 **[← Back to overview](../../../README.md)**
 
 
-**Documentation:** English · [Русский](../../ru/guides/limitations.md) · [日本語]()
+**Documentation:** English · [German](../../de/guides/limitations.md) · [Русский](../../ru/guides/limitations.md) · [日本語]()
 
 - The library is designed to sync the following HTTP methods: `POST`, `PUT`, `PATCH`, `DELETE`.
 - `GET` requests are not added to the offline queue.

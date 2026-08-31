@@ -2,7 +2,7 @@
 
 **[← Back to overview](../../../README.md)**
 
-**Documentation:** English · [Русский](../../ru/guides/how-it-works.md) · [日本語]()
+**Documentation:** English · [German](../../de/guides/how-it-works.md) · [Русский](../../ru/guides/how-it-works.md) · [日本語]()
 
 The library goes through three scenarios depending on the network state.
 
