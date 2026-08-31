@@ -2,7 +2,7 @@
 
 **[← Back to overview](../../../README.md)**
 
-**Documentation:** English · [German](../../de/guides/architecture.md) · [Русский](../../ru/guides/architecture.md) · [日本語]()
+**Documentation:** English · [German](../../de/guides/architecture.md) · [Русский](../../ru/guides/architecture.md)
 
 The library is split into several core components:
 

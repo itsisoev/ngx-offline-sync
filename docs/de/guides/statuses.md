@@ -2,7 +2,7 @@
 
 **[← Zur Übersicht](../../../README.md)**
 
-**Dokumentation:** [English](../../en/guides/statuses.md) · [Русский](../../ru/guides/statuses.md) · [日本語]()
+**Dokumentation:** Deutsch · [English](../../en/guides/statuses.md) · [Русский](../../ru/guides/statuses.md)
 
 Jede Anfrage in der Warteschlange hat einen der folgenden Status:
 

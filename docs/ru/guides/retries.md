@@ -2,7 +2,7 @@
 
 **[← Назад к оглавлению](../README.md)**
 
-**Документация:** [English](../../en/guides/retries.md) · Русский · [日本語]()
+**Документация:** [English](../../en/guides/retries.md) · Русский · [German](../../de/guides/retries.md)
 
 Если синхронизация завершается ошибкой, библиотека передаёт ошибку в `RetryPolicy`.
 

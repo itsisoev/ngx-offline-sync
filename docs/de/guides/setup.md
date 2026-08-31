@@ -2,7 +2,7 @@
 
 **[← Zur Übersicht](../../../README.md)**
 
-**Dokumentation:** [English](../../en/guides/setup.md) · [Русский](../../ru/guides/setup.md) · [日本語]()
+**Dokumentation:** Deutsch · [English](../../en/guides/setup.md) · [Русский](../../ru/guides/setup.md)
 
 Fügen Sie `provideOfflineSync()` und `offlineSyncInterceptor` zur Konfiguration Ihrer Anwendung hinzu:
 

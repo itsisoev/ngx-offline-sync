@@ -2,7 +2,7 @@
 
 **[← Zur Übersicht](../../../README.md)**
 
-**Dokumentation:** [English](../../en/guides/architecture.md) · [Русский](../../ru/guides/architecture.md) · [日本語]()
+**Dokumentation:** Deutsch · [English](../../en/guides/architecture.md) · [Русский](../../ru/guides/architecture.md)
 
 Die Bibliothek besteht aus mehreren Kernkomponenten:
 
