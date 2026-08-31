@@ -1,6 +1,6 @@
 # Подключение
 
-**Документация:** [English](../../en/guides/setup.md) · Русский · [German](../../de/guides/setup.md)
+**Документация:** [English](../../en/guides/setup.md) · [Deutsch](../../de/guides/setup.md) · Русский
 **[← Назад к оглавлению](../README.md)**
 
 Добавьте `provideOfflineSync()` и `offlineSyncInterceptor` в конфигурацию приложения:

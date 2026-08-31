@@ -2,7 +2,7 @@
 
 **[← Назад к оглавлению](../../README.md)**
 
-**Документация:** [English](../../../en/guides/configuration/index.md) · Русский · [Deutsch](../../../de/guides/configuration/index.md)
+**Документация:** [English](../../../en/guides/configuration/index.md) · [Deutsch](../../../de/guides/configuration/index.md) · Русский
 
 `provideOfflineSync()` принимает необязательный объект конфигурации, который позволяет настроить поведение очереди, синхронизации и логирования.
 

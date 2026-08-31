@@ -2,7 +2,7 @@
 
 **[← Назад к оглавлению](../README.md)**
 
-**Документация:** [English](../../en/guides/architecture.md) · Русский · [German](../../de/guides/architecture.md)
+**Документация:** [English](../../en/guides/architecture.md) · [Deutsch](../../de/guides/architecture.md) · Русский
 
 Библиотека разделена на несколько основных компонентов:
 

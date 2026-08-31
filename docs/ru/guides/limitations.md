@@ -3,7 +3,7 @@
 **[← Назад к оглавлению](../README.md)**
 
 
-**Документация:** [English](../../en/guides/limitations.md) · Русский · [German](../../de/guides/limitations.md)
+**Документация:** [English](../../en/guides/limitations.md) · [Deutsch](../../de/guides/limitations.md) · Русский
 
 - Библиотека предназначена для синхронизации следующих HTTP-методов: `POST`, `PUT`, `PATCH`, `DELETE`.
 - `GET`-запросы не помещаются в offline queue.

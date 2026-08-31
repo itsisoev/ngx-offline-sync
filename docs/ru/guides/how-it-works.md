@@ -2,7 +2,7 @@
 
 **[← Назад к оглавлению](../README.md)**
 
-**Документация:** [English](../../en/guides/how-it-works.md) · Русский · [German](../../de/guides/how-it-works.md)
+**Документация:** [English](../../en/guides/how-it-works.md) · [Deutsch](../../de/guides/how-it-works.md) · Русский
 
 Библиотека проходит через три сценария в зависимости от состояния сети.
 

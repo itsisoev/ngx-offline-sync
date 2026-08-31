@@ -1,8 +1,8 @@
 # Roadmap
 
-**[← Zur Übersicht](../../../README.md)**
+**[← Zur Übersicht](../README.md)**
 
-**Dokumentation:** Deutsch · [English](../../en/guides/roadmap.md) · [Русский](../../ru/guides/roadmap.md)
+**Dokumentation:** [English](../../en/guides/roadmap.md) · Deutsch · [Русский](../../ru/guides/roadmap.md)
 
 Das Projekt wird aktiv weiterentwickelt. Geplante Verbesserungen umfassen:
 
