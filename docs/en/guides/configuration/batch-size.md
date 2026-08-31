@@ -2,7 +2,7 @@
 
 **[← Back to configuration](index.md)**
 
-**Documentation:** English · [Русский](../../../ru/guides/configuration/batch-size.md) · [日本語]()
+**Documentation:** English · [German](../../../de/guides/configuration/batch-size.md) · [Русский](../../../ru/guides/configuration/batch-size.md) · [日本語]()
 
 | Type     | Default |
 |----------|---------|

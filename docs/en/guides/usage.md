@@ -2,7 +2,7 @@
 
 **[← Back to overview](../../../README.md)**
 
-**Documentation:** English · [Русский](../../ru/guides/usage.md) · [日本語]()
+**Documentation:** English · [German](../../de/guides/usage.md) · [Русский](../../ru/guides/usage.md) · [日本語]()
 
 
 Once set up, the library doesn't require any special API for sending requests. Just use the regular `HttpClient`:

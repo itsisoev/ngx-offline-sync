@@ -2,7 +2,7 @@
 
 **[← Back to configuration](index.md)**
 
-**Documentation:** English · [Русский](../../../ru/guides/configuration/logging.md) · [日本語]()
+**Documentation:** English · [German](../../../de/guides/configuration/logging.md) · [Русский](../../../ru/guides/configuration/logging.md) · [日本語]()
 
 | Option     | Type          | Default          |
 |------------|---------------|------------------|
