@@ -2,7 +2,7 @@
 
 **[← Назад к оглавлению](../README.md)**
 
-**Документация:** [English](../../en/guides/statuses.md) · Русский · [German](../../de/guides/statuses.md)
+**Документация:** [English](../../en/guides/statuses.md) · [Deutsch](../../de/guides/statuses.md) · Русский
 
 Каждый запрос в очереди имеет один из следующих статусов:
 

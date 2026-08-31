@@ -1,8 +1,8 @@
 # Wiederholungen
 
-**[← Zur Übersicht](../../../README.md)**
+**[← Zur Übersicht](../README.md)**
 
-**Dokumentation:** Deutsch · [English](../../en/guides/retries.md) · [Русский](../../ru/guides/retries.md)
+**Dokumentation:** [English](../../en/guides/retries.md) · Deutsch · [Русский](../../ru/guides/retries.md)
 
 Wenn die Synchronisierung fehlschlägt, übergibt die Bibliothek den Fehler an die `RetryPolicy`.
 

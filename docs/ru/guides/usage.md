@@ -2,7 +2,7 @@
 
 **[← Назад к оглавлению](../README.md)**
 
-**Документация:** [English](../../en/guides/usage.md) · Русский · [Deutsch](../../de/guides/usage.md)
+**Документация:** [English](../../en/guides/usage.md) · [Deutsch](../../de/guides/usage.md) · Русский
 
 После подключения библиотека не требует специального API для отправки запросов. Используйте обычный `HttpClient`:
 

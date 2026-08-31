@@ -1,8 +1,8 @@
 # Architektur
 
-**[← Zur Übersicht](../../../README.md)**
+**[← Zur Übersicht](../README.md)**
 
-**Dokumentation:** Deutsch · [English](../../en/guides/architecture.md) · [Русский](../../ru/guides/architecture.md)
+**Dokumentation:** [English](../../en/guides/architecture.md) · Deutsch · [Русский](../../ru/guides/architecture.md)
 
 Die Bibliothek besteht aus mehreren Kernkomponenten:
 

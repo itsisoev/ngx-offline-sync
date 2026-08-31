@@ -1,8 +1,8 @@
 # So funktioniert es
 
-**[← Zur Übersicht](../../../README.md)**
+**[← Zur Übersicht](../README.md)**
 
-**Dokumentation:** Deutsch · [English](../../en/guides/how-it-works.md) · [Русский](../../ru/guides/how-it-works.md)
+**Dokumentation:** [English](../../en/guides/how-it-works.md) · Deutsch · [Русский](../../ru/guides/how-it-works.md)
 
 Abhängig vom Netzwerkstatus durchläuft die Bibliothek drei Szenarien.
 

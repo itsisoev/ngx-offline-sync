@@ -2,7 +2,7 @@
 
 **[← Назад к оглавлению](../README.md)**
 
-**Документация:** [English](../../en/guides/roadmap.md) · Русский · [German](../../de/guides/roadmap.md)
+**Документация:** [English](../../en/guides/roadmap.md) · [Deutsch](../../de/guides/roadmap.md) · Русский
 
 Проект находится в активной разработке. Планируемое развитие библиотеки включает:
 

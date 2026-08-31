@@ -8,7 +8,7 @@
   <img src="https://img.shields.io/github/stars/itsisoev/ngx-offline-sync" alt="GitHub stars"/>
 </div>
 
-**Dokumentation:** [English](../../README.md) · [Русский](../ru/README.md) · Deutsch
+**Dokumentation:** [English](../../README.md) · Deutsch · [Русский](../ru/README.md)
 
 > **Offline-first-Synchronisierung von HTTP-Anfragen für Angular.**
 

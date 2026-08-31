@@ -1,8 +1,8 @@
 # Anfragestatus
 
-**[← Zur Übersicht](../../../README.md)**
+**[← Zur Übersicht](../README.md)**
 
-**Dokumentation:** Deutsch · [English](../../en/guides/statuses.md) · [Русский](../../ru/guides/statuses.md)
+**Dokumentation:** [English](../../en/guides/statuses.md) · Deutsch · [Русский](../../ru/guides/statuses.md)
 
 Jede Anfrage in der Warteschlange hat einen der folgenden Status:
 

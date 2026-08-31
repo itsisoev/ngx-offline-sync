@@ -2,7 +2,7 @@
 
 **[← Back to overview](../../../README.md)**
 
-**Documentation:** English · [German](../../de/guides/setup.md) · [Русский](../../ru/guides/setup.md) · [German](../../de/guides/setup.md)
+**Documentation:** English · [Deutsch](../../de/guides/setup.md) · [Русский](../../ru/guides/setup.md)
 
 Add `provideOfflineSync()` and `offlineSyncInterceptor` to your application configuration:
 
