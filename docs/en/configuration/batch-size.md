@@ -2,7 +2,7 @@
 
 **[← Back to configuration](index.md)**
 
-**Documentation:** English · [Deutsch](../../../de/guides/configuration/batch-size.md) · [Русский](../../../ru/guides/configuration/batch-size.md)
+**Documentation:** English · [Deutsch](../../de/configuration/batch-size.md) · [Русский](../../ru/configuration/batch-size.md)
 
 | Type     | Default |
 |----------|---------|
@@ -78,5 +78,5 @@ When the connection is restored, a queue of 20 requests forms 4 batches of 5. Ba
 
 ## See also
 
-- [Architecture](../architecture.md) — `SyncService` and where `batchSize` is applied
-- [Request statuses](../statuses.md) — how to track a batch's progress
+- [Architecture](../guides/architecture.md) — `SyncService` and where `batchSize` is applied
+- [Request statuses](../guides/statuses.md) — how to track a batch's progress

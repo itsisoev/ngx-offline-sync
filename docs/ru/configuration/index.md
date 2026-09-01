@@ -1,8 +1,8 @@
 # Конфигурация
 
-**[← Назад к оглавлению](../../README.md)**
+**[← Назад к оглавлению](../README.md)**
 
-**Документация:** [English](../../../en/guides/configuration/index.md) · [Deutsch](../../../de/guides/configuration/index.md) · Русский
+**Документация:** Русский · [English](../../en/configuration/index.md) · [Deutsch](../../de/configuration/index.md)
 
 `provideOfflineSync()` принимает необязательный объект конфигурации, который позволяет настроить поведение очереди, синхронизации и логирования.
 
@@ -22,10 +22,21 @@ provideOfflineSync({
 | `logLevel`  | `LogLevel`    | `LogLevel.NONE`  | Уровень детализации логов: от полного отсутствия логирования до полного трейса. [Подробнее →](logging.md)       |
 | `language`  | `LogLanguage` | `LogLanguage.EN` | Язык текстовых сообщений в логах. [Подробнее →](logging.md)                                                     |
 
-По мере развития библиотеки сюда будут добавляться новые опции — например, стратегии повторных попыток и приоритет запросов (см. [Планы развития](../roadmap.md)). Каждая опция описывается в отдельном файле, чтобы было проще искать и поддерживать.
+## Приоритет отдельных запросов
 
-## Что дальше
+Помимо глобальных опций `provideOfflineSync()`, библиотека позволяет задавать приоритет **для конкретного запроса** — какие операции должны синхронизироваться раньше остальных.
 
-- [batchSize](batch-size.md) — параллельная обработка очереди
-- [logLevel и language](logging.md) — настройка логирования
-- [Архитектура](../architecture.md) — где именно в пайплайне применяется конфигурация
+Приоритет устанавливается не через `provideOfflineSync()`, а точечно, на уровне запроса, с помощью `HttpContext`:
+
+```typescript
+const context = new HttpContext().set(
+  OFFLINE_SYNC_PRIORITY,
+  QueuePriority.HIGH,
+);
+
+this.http.post('/api/orders', order, {
+  context,
+});
+```
+
+Доступны три уровня: `HIGH`, `NORMAL` (по умолчанию) и `LOW`. [Подробнее → Priority Queue](priority-queue.md)

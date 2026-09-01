@@ -2,7 +2,7 @@
 
 **[← Zur Konfiguration](index.md)**
 
-**Dokumentation:** [English](../../../en/guides/configuration/logging.md) · Deutsch · [Русский](../../../ru/guides/configuration/logging.md)
+**Dokumentation:** [English](../../en/configuration/logging.md) · Deutsch · [Русский](../../ru/configuration/logging.md)
 
 | Option     | Typ           | Standardwert     |
 |------------|---------------|------------------|
