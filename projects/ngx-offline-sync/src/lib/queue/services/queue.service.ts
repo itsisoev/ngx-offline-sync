@@ -160,6 +160,7 @@ export class QueueService implements IQueue {
         return 2;
 
       case QueuePriority.LOW:
+      default:
         return 1;
     }
   }

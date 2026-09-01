@@ -452,4 +452,20 @@ describe('QueueService', () => {
 
     expect(result.map((item) => item.id)).toEqual([high.id, normal.id, low.id]);
   });
+
+  it('should treat items without priority as NORMAL', async () => {
+    const legacyItem = createQueueItem(createRequest('request-1'));
+
+    delete (legacyItem as Partial<IQueueItem>).priority;
+
+    const highPriorityItem = createQueueItem(createRequest('request-2'), 0, QueuePriority.HIGH);
+
+    await queue.enqueue(legacyItem);
+    await queue.enqueue(highPriorityItem);
+
+    const result = await queue.getPending();
+
+    expect(result[0].id).toBe(highPriorityItem.id);
+    expect(result[1].id).toBe(legacyItem.id);
+  });
 });
