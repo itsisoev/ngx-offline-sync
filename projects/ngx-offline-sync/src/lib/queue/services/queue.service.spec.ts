@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { QueueService } from './queue.service';
-import { IQueueItem } from '../queue-item';
-import { createQueueItem } from '../queue-item';
 import { HttpMethod, SyncStatus } from '../../core';
 import { IStorage } from '../../storage';
+import { QueuePriority } from '../queue-item/enums/queue-priority.enum';
+import { IQueueItem } from '../queue-item/interfaces/queue-item.interface';
+import { createQueueItem } from '../queue-item/factories/queue-item.factory';
 
 class FakeStorage implements IStorage<IQueueItem> {
   private readonly items = new Map<string, IQueueItem>();
@@ -161,7 +162,6 @@ describe('QueueService', () => {
 
     expect(await queue.size()).toBe(0);
   });
-
 
   it('should update an item', async () => {
     const storage = new FakeStorage();
@@ -397,5 +397,59 @@ describe('QueueService', () => {
 
     expect(result).toHaveLength(3);
     expect(result.every((item) => item.status === SyncStatus.SYNCING)).toBe(true);
+  });
+
+  it('should return pending items ordered by priority', async () => {
+    const low = createQueueItem(createRequest('request-low'));
+    const normal = createQueueItem(createRequest('request-normal'));
+    const high = createQueueItem(createRequest('request-high'));
+
+    low.priority = QueuePriority.LOW;
+    normal.priority = QueuePriority.NORMAL;
+    high.priority = QueuePriority.HIGH;
+
+    await queue.enqueue(low);
+    await queue.enqueue(normal);
+    await queue.enqueue(high);
+
+    const result = await queue.getPending();
+
+    expect(result.map((item) => item.id)).toEqual([high.id, normal.id, low.id]);
+  });
+
+  it('should preserve FIFO order for items with the same priority', async () => {
+    const first = createQueueItem(createRequest('request-1'));
+    const second = createQueueItem(createRequest('request-2'));
+    const third = createQueueItem(createRequest('request-3'));
+
+    first.priority = QueuePriority.HIGH;
+    second.priority = QueuePriority.HIGH;
+    third.priority = QueuePriority.HIGH;
+
+    await queue.enqueue(first);
+    await queue.enqueue(second);
+    await queue.enqueue(third);
+
+    const result = await queue.getPending();
+
+    expect(result.map((item) => item.id)).toEqual([first.id, second.id, third.id]);
+  });
+
+  it('should dequeue a batch ordered by priority', async () => {
+    const low = createQueueItem(createRequest('request-low'));
+    const normal = createQueueItem(createRequest('request-normal'));
+    const high = createQueueItem(createRequest('request-high'));
+
+    low.priority = QueuePriority.LOW;
+    normal.priority = QueuePriority.NORMAL;
+    high.priority = QueuePriority.HIGH;
+
+    await queue.enqueue(low);
+    await queue.enqueue(normal);
+    await queue.enqueue(high);
+
+    const result = await queue.dequeueBatch(3);
+
+    expect(result.map((item) => item.id)).toEqual([high.id, normal.id, low.id]);
   });
 });

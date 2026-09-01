@@ -1,8 +1,10 @@
-import { IQueue } from '../interfaces';
-import { IQueueItem } from '../queue-item';
+import { IQueue } from '../interfaces/queue.interface';
 import { IQueueItemUpdate } from '../queue-item/interfaces/queue-item-update.interface';
+import { IQueueItem } from '../queue-item/interfaces/queue-item.interface';
 import { SyncStatus } from '../../core';
 import { IStorage } from '../../storage';
+import { QueuePriority } from '../queue-item/enums/queue-priority.enum';
+
 
 export class QueueService implements IQueue {
   private readonly reservedIds = new Set<string>();
@@ -81,6 +83,13 @@ export class QueueService implements IQueue {
         return true;
       })
       .sort((a, b) => {
+        const priorityDiff =
+          this.getPriorityWeight(b.priority) - this.getPriorityWeight(a.priority);
+
+        if (priorityDiff !== 0) {
+          return priorityDiff;
+        }
+
         const createdAtDiff = a.createdAt - b.createdAt;
 
         if (createdAtDiff !== 0) {
@@ -140,5 +149,18 @@ export class QueueService implements IQueue {
     }
 
     return reservedItems;
+  }
+
+  private getPriorityWeight(priority: QueuePriority): number {
+    switch (priority) {
+      case QueuePriority.HIGH:
+        return 3;
+
+      case QueuePriority.NORMAL:
+        return 2;
+
+      case QueuePriority.LOW:
+        return 1;
+    }
   }
 }

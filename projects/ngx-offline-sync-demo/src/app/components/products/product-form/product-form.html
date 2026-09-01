@@ -44,6 +44,25 @@
           <option [ngValue]="1000">1000x</option>
           <option [ngValue]="10000">10000x</option>
         </select>
+
+        <select
+          class="form-select priority-select"
+          [ngModel]="selectedPriority()"
+          (ngModelChange)="setPriority($event)"
+          [disabled]="isSending()"
+        >
+          <option [ngValue]="QueuePriority.HIGH">
+            High
+          </option>
+
+          <option [ngValue]="QueuePriority.NORMAL">
+            Normal
+          </option>
+
+          <option [ngValue]="QueuePriority.LOW">
+            Low
+          </option>
+        </select>
       </div>
 
       <button
@@ -153,7 +172,9 @@
 
     <div class="product-form__footer">
       <span class="request-info">
-        Automatic mode:
+        Priority:
+        <strong>{{ selectedPriority() }}</strong>
+        · Automatic mode:
         <strong>{{ autoSendCount() }} request(s)</strong>
       </span>
 

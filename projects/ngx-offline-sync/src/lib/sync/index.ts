@@ -7,3 +7,4 @@ export * from './services/retry-scheduler.service';
 export * from './services/sync.service';
 export * from './interfaces/sync-stats.interface';
 export * from './enums/sync-result.enum';
+export * from './tokens/offline-sync-priority.token';

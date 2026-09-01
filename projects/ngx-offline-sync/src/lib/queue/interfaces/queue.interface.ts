@@ -1,4 +1,4 @@
-import { IQueueItem } from '../queue-item';
+import { IQueueItem } from '../queue-item/interfaces/queue-item.interface';
 
 export interface IQueue {
   enqueue(item: IQueueItem): Promise<void>;

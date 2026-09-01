@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import 'fake-indexeddb/auto';
 import { QueueService } from './queue.service';
-import { IndexedDbStorage } from '../../storage/indexed-db';
-import { createQueueItem, IQueueItem } from '../queue-item';
 import { HttpMethod, SyncStatus } from '../../core';
+import { createQueueItem } from '../queue-item/factories/queue-item.factory';
+import { IndexedDbStorage } from '../../storage';
+import { IQueueItem } from '../queue-item/interfaces/queue-item.interface';
 
 describe('QueueService + IndexedDbStorage', () => {
   let queue: QueueService;
