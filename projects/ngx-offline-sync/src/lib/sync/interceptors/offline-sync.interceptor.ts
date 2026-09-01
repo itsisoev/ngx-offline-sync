@@ -5,6 +5,7 @@ import { NetworkStatusService } from '../../network';
 import { QueueService, createQueueItem } from '../../queue';
 import { HttpMethod } from '../../core';
 import { LogEvent, LoggerService } from '../../logging';
+import { OFFLINE_SYNC_PRIORITY } from '../tokens/offline-sync-priority.token';
 
 export function offlineSyncInterceptor(
   request: HttpRequest<unknown>,
@@ -26,12 +27,18 @@ export function offlineSyncInterceptor(
     return next(request);
   }
 
-  const queueItem = createQueueItem({
-    id: crypto.randomUUID(),
-    method: method as HttpMethod,
-    url: request.urlWithParams,
-    body: request.body,
-  });
+  const priority = request.context.get(OFFLINE_SYNC_PRIORITY);
+
+  const queueItem = createQueueItem(
+    {
+      id: crypto.randomUUID(),
+      method: method as HttpMethod,
+      url: request.urlWithParams,
+      body: request.body,
+    },
+    0,
+    priority,
+  );
 
   logger.info(LogEvent.REQUEST_INTERCEPTED, {
     id: queueItem.id,

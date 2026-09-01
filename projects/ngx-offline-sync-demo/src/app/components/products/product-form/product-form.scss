@@ -364,3 +364,28 @@
     flex-direction: column;
   }
 }
+
+.priority-select {
+  width: 90px;
+  min-height: 30px;
+
+  padding: 3px 5px;
+
+  border: 1px solid #003c74;
+  border-radius: 2px;
+
+  background: #fff;
+
+  color: #000;
+
+  font-family: Tahoma, Arial, sans-serif;
+  font-size: 11px;
+
+  box-shadow:
+    inset 1px 1px 2px rgba(0, 0, 0, 0.15);
+
+  &:focus {
+    outline: none;
+    border-color: #003c74;
+  }
+}

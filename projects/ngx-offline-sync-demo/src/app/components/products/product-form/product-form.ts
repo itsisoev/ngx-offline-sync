@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-
 import { ProductService } from '../product-service';
+import { QueuePriority } from 'ngx-offline-sync';
 
 @Component({
   selector: 'app-product-form',
@@ -14,6 +14,8 @@ export class ProductForm {
   private readonly fb = inject(FormBuilder);
   private readonly productService = inject(ProductService);
 
+  readonly QueuePriority = QueuePriority;
+
   readonly productForm = this.fb.nonNullable.group({
     title: ['', Validators.required],
     price: [0, [Validators.required, Validators.min(0)]],
@@ -25,6 +27,7 @@ export class ProductForm {
   readonly isAutoFilling = signal(false);
   readonly isSending = signal(false);
   readonly autoSendCount = signal(1);
+  readonly selectedPriority = signal(QueuePriority.NORMAL);
 
   autoFill(): void {
     this.isAutoFilling.set(true);
@@ -61,6 +64,10 @@ export class ProductForm {
     this.autoSendCount.set(Number(count));
   }
 
+  setPriority(priority: QueuePriority): void {
+    this.selectedPriority.set(priority);
+  }
+
   submit(): void {
     if (this.productForm.invalid) {
       this.productForm.markAllAsTouched();
@@ -68,14 +75,15 @@ export class ProductForm {
     }
 
     const product = this.productForm.getRawValue();
+    const priority = this.selectedPriority();
 
-    this.productService.createProduct(product).subscribe({
+    this.productService.createProduct(product, priority).subscribe({
       next: (response) => {
-
+        console.log('Product created:', response);
       },
 
       error: (error) => {
-
+        console.error('Failed to create product:', error);
       },
     });
   }
@@ -88,6 +96,7 @@ export class ProductForm {
 
     const product = this.productForm.getRawValue();
     const count = this.autoSendCount();
+    const priority = this.selectedPriority();
 
     this.isSending.set(true);
 
@@ -95,9 +104,12 @@ export class ProductForm {
 
     for (let i = 0; i < count; i++) {
       this.productService
-        .createProduct({
-          ...product,
-        })
+        .createProduct(
+          {
+            ...product,
+          },
+          priority,
+        )
         .subscribe({
           next: (response) => {
             console.log(`Automatic request ${i + 1}/${count}:`, response);

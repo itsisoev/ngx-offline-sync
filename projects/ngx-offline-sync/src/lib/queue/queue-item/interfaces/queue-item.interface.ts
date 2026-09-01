@@ -1,4 +1,5 @@
 import { ISyncRequest, SyncStatus } from '../../../core';
+import { QueuePriority } from '../enums/queue-priority.enum';
 
 export interface IQueueItem {
   id: string;
@@ -10,4 +11,5 @@ export interface IQueueItem {
   updatedAt: number;
   nextRetryAt?: number;
   error?: string;
+  priority: QueuePriority;
 }
