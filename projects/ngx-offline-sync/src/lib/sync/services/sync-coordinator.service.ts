@@ -1,6 +1,5 @@
 import { inject, Injectable } from '@angular/core';
 import { Subscription } from 'rxjs';
-
 import { NetworkStatusService } from '../../network';
 import { QueueService } from '../../queue';
 import { SyncService } from './sync.service';

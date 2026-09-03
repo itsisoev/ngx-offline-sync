@@ -1,7 +1,7 @@
 import { firstValueFrom } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { ISyncService } from '../interfaces/sync.service.interface';
-import { IRetryPolicy } from '../interfaces/retry-policy.interface';
+import { IRetryPolicy } from '../policies/interfaces/retry-policy.interface';
 import { RetryPolicy } from '../policies/retry.policy';
 import { IQueueItem, QueueService } from '../../queue';
 import { SyncStatus } from '../../core';
@@ -51,12 +51,7 @@ export class SyncService implements ISyncService {
     const shouldRetry = this.retryPolicy.shouldRetry(error, nextAttempts);
 
     if (!shouldRetry) {
-      await this.queue.update(id, {
-        status: SyncStatus.FAILED,
-        attempts: nextAttempts,
-        nextRetryAt: undefined,
-        error: this.getErrorMessage(error),
-      });
+      await this.queue.remove(id);
 
       this.logger.error(LogEvent.REQUEST_FAILED_PERMANENTLY, {
         id,
@@ -95,16 +90,6 @@ export class SyncService implements ISyncService {
   }
 
   async getNextRetryAt(): Promise<number | undefined> {
-    const items = await this.queue.getPending();
-
-    const retryTimes = items
-      .map((item) => item.nextRetryAt)
-      .filter((value): value is number => value !== undefined);
-
-    if (retryTimes.length === 0) {
-      return undefined;
-    }
-
-    return Math.min(...retryTimes);
+    return this.queue.getNextRetryAt();
   }
 }

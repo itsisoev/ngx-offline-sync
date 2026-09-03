@@ -22,23 +22,28 @@ export function provideOfflineSync(config: IOfflineSyncConfig = {}): Environment
   return makeEnvironmentProviders([
     NetworkStatusService,
     LoggerService,
+
     {
       provide: LOG_TRANSPORT,
       useClass: ConsoleLogTransport,
     },
+
     {
       provide: IndexedDbStorage,
       useFactory: () => new IndexedDbStorage<IQueueItem>(),
     },
+
     {
       provide: QueueService,
       useFactory: (storage: IndexedDbStorage<IQueueItem>) => new QueueService(storage),
       deps: [IndexedDbStorage],
     },
+
     {
       provide: RetryPolicy,
-      useFactory: () => new RetryPolicy(),
+      useFactory: () => new RetryPolicy(config.retry?.maxAttempts, config.retry?.delay),
     },
+
     {
       provide: SyncService,
       useFactory: (
@@ -49,8 +54,10 @@ export function provideOfflineSync(config: IOfflineSyncConfig = {}): Environment
       ) => new SyncService(queue, http, retryPolicy, logger),
       deps: [QueueService, HttpClient, RetryPolicy, LoggerService],
     },
+
     RetrySchedulerService,
     SyncCoordinatorService,
+
     {
       provide: ENVIRONMENT_INITIALIZER,
       multi: true,
@@ -60,6 +67,7 @@ export function provideOfflineSync(config: IOfflineSyncConfig = {}): Environment
         coordinator.start();
       },
     },
+
     {
       provide: OFFLINE_SYNC_CONFIG,
       useValue: {

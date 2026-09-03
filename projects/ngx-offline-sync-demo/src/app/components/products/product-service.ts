@@ -10,7 +10,8 @@ export class ProductService {
   private readonly http = inject(HttpClient);
 
   // private readonly url = 'http://localhost:3000/products';
-  private readonly url = 'https://fakestoreapi.com/products';
+  // private readonly url = 'https://fakestoreapi.com/products/ss';
+  private readonly url = 'https://httpbin.org/status/500';
 
   getProducts(): Observable<Product[]> {
     return this.http.get<Product[]>(this.url);
