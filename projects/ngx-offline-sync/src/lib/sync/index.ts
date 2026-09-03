@@ -1,5 +1,5 @@
 export * from './interceptors/offline-sync.interceptor';
-export * from './interfaces/retry-policy.interface';
+export * from './policies/interfaces/retry-policy.interface';
 export * from './interfaces/sync.service.interface';
 export * from './policies/retry.policy';
 export * from './services/sync-coordinator.service';
@@ -8,3 +8,4 @@ export * from './services/sync.service';
 export * from './interfaces/sync-stats.interface';
 export * from './enums/sync-result.enum';
 export * from './tokens/offline-sync-priority.token';
+export * from './policies/interfaces/retry-config.interface';

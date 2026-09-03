@@ -1,5 +1,6 @@
 import { LogLevel } from '../logging';
-import { LogLanguage } from '../logging/enums/log-language.enum';
+import { LogLanguage } from '../logging';
+import { IRetryConfig } from '../sync';
 
 export interface IOfflineSyncConfig {
   /**
@@ -19,4 +20,9 @@ export interface IOfflineSyncConfig {
    * @default LogLanguage.EN
    */
   language?: LogLanguage;
+
+  /**
+   * Retry configuration for failed requests.
+   */
+  retry?: IRetryConfig;
 }

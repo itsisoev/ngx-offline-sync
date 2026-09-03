@@ -1,7 +1,7 @@
 import { firstValueFrom } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { ISyncService } from '../interfaces/sync.service.interface';
-import { IRetryPolicy } from '../interfaces/retry-policy.interface';
+import { IRetryPolicy } from '../policies/interfaces/retry-policy.interface';
 import { RetryPolicy } from '../policies/retry.policy';
 import { IQueueItem, QueueService } from '../../queue';
 import { SyncStatus } from '../../core';

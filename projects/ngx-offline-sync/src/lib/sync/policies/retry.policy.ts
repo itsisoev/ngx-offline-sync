@@ -1,10 +1,10 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { IRetryPolicy } from '../interfaces/retry-policy.interface';
+import { IRetryPolicy } from './interfaces/retry-policy.interface';
 
 export class RetryPolicy implements IRetryPolicy {
   constructor(
     private readonly maxAttempts = 3,
-    private readonly baseDelay = 1000,
+    private readonly baseDelay = 5000,
   ) {}
 
   shouldRetry(error: unknown, attempts: number): boolean {
@@ -26,6 +26,6 @@ export class RetryPolicy implements IRetryPolicy {
   }
 
   getDelay(attempts: number): number {
-    return this.baseDelay * 2 ** (attempts - 1);
+    return this.baseDelay * attempts;
   }
 }
