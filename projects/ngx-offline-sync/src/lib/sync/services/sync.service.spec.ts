@@ -6,7 +6,7 @@ import { SyncService } from './sync.service';
 import { QueueService, createQueueItem } from '../../queue';
 import { IQueueItem } from '../../queue';
 import { IStorage } from '../../storage';
-import { HttpMethod, SyncStatus } from '../../core';
+import { HttpMethod } from '../../core';
 import { RetryPolicy } from '../policies/retry.policy';
 import { ILogger, LogEvent } from '../../logging';
 import { SyncResult } from '../enums/sync-result.enum';
@@ -96,7 +96,7 @@ describe('SyncService', () => {
     expect(storedItem).toBeUndefined();
   });
 
-  it('should mark item as failed and return FAILED when request returns a client error', async () => {
+  it('should remove item and return FAILED when request returns a client error', async () => {
     const storage = new FakeStorage();
     const queue = new QueueService(storage);
     const http = new FakeHttpClient();
@@ -123,9 +123,7 @@ describe('SyncService', () => {
 
     const storedItem = await storage.get(item.id);
 
-    expect(storedItem?.status).toBe(SyncStatus.FAILED);
-    expect(storedItem?.attempts).toBe(1);
-    expect(storedItem?.error).toBeDefined();
+    expect(storedItem).toBeUndefined();
   });
 
   it('should return RETRY and schedule next attempt when request returns a server error', async () => {
@@ -160,7 +158,7 @@ describe('SyncService', () => {
 
     const storedItem = await storage.get(item.id);
 
-    expect(storedItem?.status).toBe(SyncStatus.PENDING);
+    expect(storedItem?.status).toBe('PENDING');
     expect(storedItem?.attempts).toBe(1);
     expect(storedItem?.nextRetryAt).toBeDefined();
   });
@@ -196,12 +194,12 @@ describe('SyncService', () => {
 
     const storedItem = await storage.get(item.id);
 
-    expect(storedItem?.status).toBe(SyncStatus.PENDING);
+    expect(storedItem?.status).toBe('PENDING');
     expect(storedItem?.attempts).toBe(1);
     expect(storedItem?.nextRetryAt).toBeDefined();
   });
 
-  it('should return FAILED after maximum attempts', async () => {
+  it('should remove item after maximum attempts', async () => {
     const storage = new FakeStorage();
     const queue = new QueueService(storage);
     const http = new FakeHttpClient();
@@ -235,8 +233,6 @@ describe('SyncService', () => {
 
     const storedItem = await storage.get(item.id);
 
-    expect(storedItem?.status).toBe(SyncStatus.FAILED);
-    expect(storedItem?.attempts).toBe(3);
-    expect(storedItem?.nextRetryAt).toBeUndefined();
+    expect(storedItem).toBeUndefined();
   });
 });
