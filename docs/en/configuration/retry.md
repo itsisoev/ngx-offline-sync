@@ -56,7 +56,7 @@ provideOfflineSync({
 })
 ```
 
-## 📋 Available options
+## Available options
 
 | Option        | Type     | Default | Description                                        |
 |---------------|----------|---------|----------------------------------------------------|
@@ -86,14 +86,14 @@ Attempt 5 → error → final error
 
 ---
 
-## ❗ Which errors are retried
+## Which errors are retried
 
 Retry applies to errors that may be temporary. In particular:
 
 - network errors;
 - 5xx server errors.
 
-> ⚠️ Client errors, such as `401` or `404`, are **not** retried automatically.
+> Client errors, such as `401` or `404`, are **not** retried automatically.
 
 ---
 
