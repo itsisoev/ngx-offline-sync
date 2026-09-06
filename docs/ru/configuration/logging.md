@@ -2,7 +2,7 @@
 
 **[← Назад к конфигурации](index.md)**
 
-**Документация:** [English](../../en/configuration/logging.md) · [Deutsch](../../de/configuration/logging.md) · Русский
+**Документация:** Русский · [English](../../en/configuration/logging.md)
 
 | Опция      | Тип           | По умолчанию     |
 |------------|---------------|------------------|

@@ -2,7 +2,7 @@
 
 **[← Back to table of contents](../README.md)**
 
-**Documentation:** English · [Deutsch](../../de/configuration/index.md) · [Русский](../../ru/configuration/index.md)
+**Documentation:** English · [Русский](../../ru/configuration/index.md)
 
 `provideOfflineSync()` accepts an optional configuration object that lets you customize the behavior of the queue, synchronization, and logging.
 
@@ -16,11 +16,12 @@ provideOfflineSync({
 
 ## Available options
 
-| Option      | Type          | Default          | Description                                                                                               |
-|-------------|---------------|------------------|-----------------------------------------------------------------------------------------------------------|
-| `batchSize` | `number`      | `1`              | The number of queued requests processed in parallel during synchronization. [Learn more →](batch-size.md) |
-| `logLevel`  | `LogLevel`    | `LogLevel.NONE`  | The verbosity of logging: from no logging at all to a full trace. [Learn more →](logging.md)              |
-| `language`  | `LogLanguage` | `LogLanguage.EN` | The language used for log messages.  [Learn more →](logging.md)                                           |
+| Option      | Type           | Default          | Description                                                                                               |
+|-------------|----------------|------------------|-----------------------------------------------------------------------------------------------------------|
+| `batchSize` | `number`       | `1`              | The number of queued requests processed in parallel during synchronization. [Learn more →](batch-size.md) |
+| `logLevel`  | `LogLevel`     | `LogLevel.NONE`  | The verbosity of logging: from no logging at all to a full trace. [Learn more →](logging.md)              |
+| `language`  | `LogLanguage`  | `LogLanguage.EN` | The language used for log messages.  [Learn more →](logging.md)                                           |
+| `retry`     | `IRetryConfig` | —                | Configuration for automatic retries on temporary errors. [Learn more →](retry.md)                         |
 
 ## Per-request priority
 

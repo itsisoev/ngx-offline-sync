@@ -2,7 +2,7 @@
 
 **[← Назад к конфигурации](index.md)**
 
-**Документация:** [English](../../en/configuration/batch-size.md) · [Deutsch](../../de/configuration/batch-size.md) · Русский
+**Документация:** Русский · [English](../../en/configuration/batch-size.md)
 
 | Тип      | По умолчанию |
 |----------|--------------|
