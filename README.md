@@ -8,7 +8,7 @@
   <img src="https://img.shields.io/github/stars/itsisoev/ngx-offline-sync" alt="GitHub stars"/>
 </div>
 
-**Documentation:** English · [Deutsch](docs/de/README.md) · [Русский](docs/ru/README.md)
+**Documentation:** English · [Русский](docs/ru/README.md)
 
 > **Offline-first HTTP request synchronization for Angular.**
 
@@ -38,33 +38,45 @@ You don't need to build your own request queue, manage IndexedDB, or implement n
 
 ## What's New
 
-#### The following changes will be available in the npm package with the `v1.1.1` release:
+### Priority Queue
 
-### September 1, 2026
+Added support for request priorities to control the synchronization order of offline requests.
 
-Added support for **Priority Queue** to control the synchronization order of offline requests.
+* `HIGH`, `NORMAL`, and `LOW` priorities.
+* `NORMAL` is used by default.
+* Priority can be set for individual HTTP requests through `HttpContext`.
+* Higher-priority requests are synchronized before lower-priority requests.
+* Requests with the same priority preserve their original queue order.
+* Added `QueuePriority` and `OFFLINE_SYNC_PRIORITY` to the public API.
+* Added tests and Priority Queue support to the Demo.
 
-* **Request priorities** — added `HIGH`, `NORMAL`, and `LOW`.
-* **Default priority** — if no priority is specified, `NORMAL` is used.
-* **Priority via HttpContext** — developers can set a priority directly on an HTTP request.
-* **Priority-aware queue processing** — higher-priority requests are synchronized before lower-priority ones.
-* **Order preservation** — requests with the same priority keep their original queue order.
-* **Public API** — `QueuePriority` and `OFFLINE_SYNC_PRIORITY` are available through the library's public API.
-* **Test coverage** — added tests for `HIGH`, `NORMAL`, and `LOW`.
-* **Demo** — added a priority selector for testing Priority Queue.
+[Learn more → Priority Queue](docs/en/configuration/priority-queue.md)
 
-### August 30, 2026
+### Retry Policy
 
-* **Configurable logging** — added a logging system with support for `LogLevel`.
-* **Language support** — log messages are now available in English and Russian through `LogLanguage`.
-* **Logging events** — added typed `LogEvent` values for tracking queue and synchronization activity.
-* **Synchronization statistics** — added statistics for processed, successful, failed, and retried requests.
-* **Configurable Log Transport** — added the ability to replace the default `ConsoleLogTransport` with a custom implementation.
-* **Improved retry logging** — added events for scheduling and starting retry attempts.
-* **Additional test coverage** — added unit tests for the logging system and related services.
+Added automatic handling of temporary errors.
 
-> These changes are currently under development and will be published in the npm package with the `v1.1.1` release.
+* Configurable `maxAttempts` and `delay`.
+* Linear Backoff between retry attempts.
+* Automatic scheduling of retry attempts.
+* Retry support for network errors and `5xx` server errors.
+* Retry state is stored in the queue through `attempts` and `nextRetryAt`.
+* Requests are removed from the queue after reaching the maximum number of attempts.
 
+[Learn more → Retry Policy](docs/en/configuration/retry.md)
+
+### Logging
+
+Expanded the logging and synchronization monitoring system.
+
+* Configurable logging levels through `LogLevel`.
+* English and Russian language support through `LogLanguage`.
+* Typed `LogEvent` values.
+* Synchronization statistics.
+* Configurable `LogTransport`.
+* Dedicated events for retry scheduling and execution.
+
+[Learn more → Logging](docs/en/configuration/logging.md)
 ---
 
 ## How it works
@@ -223,16 +235,17 @@ See:
 * [Configuration](docs/en/configuration/index.md)
 * [batchSize](docs/en/configuration/batch-size.md)
 * [logLevel and language](docs/en/configuration/logging.md)
+* [Retry Policy](docs/en/configuration/retry.md)
 * [Per-request priority](docs/en/configuration/priority-queue.md)
 
 ## Request statuses
 
 Each request in the queue has one of the following statuses:
 
-| Status      | Description                    |
-|-------------|---------------------------------|
-| `PENDING`   | The request is waiting to run  |
-| `SYNCING`   | The request is being executed  |
+| Status      | Description                        |
+|-------------|------------------------------------|
+| `PENDING`   | The request is waiting to run      |
+| `SYNCING`   | The request is being executed      |
 | `COMPLETED` | The request completed successfully |
 | `FAILED`    | The request could not be completed |
 

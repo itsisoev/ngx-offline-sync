@@ -1,8 +1,8 @@
 # Priority Queue
 
-**[← Назад к оглавлению](../../README.md)**
+**[← Назад к конфигурации](index.md)**
 
-**Документация:** [English](../../../en/guides/configuration/priority-queue.md) · [Deutsch](../../../de/guides/configuration/priority-queue.md) · Русский
+**Документация:** Русский · [English](../../../en/guides/configuration/priority-queue.md) 
 
 Когда приложение работает офлайн, запросы сохраняются в локальной очереди и синхронизируются после восстановления соединения.
 

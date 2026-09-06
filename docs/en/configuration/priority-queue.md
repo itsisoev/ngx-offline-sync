@@ -1,8 +1,8 @@
 # Priority Queue
 
-**[← Back to table of contents](index.md)**
+**[← Back to configuration](index.md)**
 
-**Documentation:** English · [Deutsch](../../de/configuration/index.md) · [Русский](../../ru/configuration/index.md)
+**Documentation:** English · [Русский](../../ru/configuration/index.md)
 
 When the application is offline, requests are stored in a local queue and synchronized after the connection is restored.
 
