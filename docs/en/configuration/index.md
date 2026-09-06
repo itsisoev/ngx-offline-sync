@@ -1,6 +1,6 @@
 # Configuration
 
-**[← Back to table of contents](../README.md)**
+**[← Back to table of contents](../../../README.md)**
 
 **Documentation:** English · [Русский](../../ru/configuration/index.md)
 
