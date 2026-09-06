@@ -50,7 +50,7 @@
 * `QueuePriority` и `OFFLINE_SYNC_PRIORITY` доступны через публичный API.
 * Добавлены тесты и поддержка Priority Queue в Demo.
 
-[Подробнее → Priority Queue](docs/ru/configuration/priority-queue.md)
+[Подробнее → Priority Queue](configuration/priority-queue.md)
 
 ### Retry Policy
 
@@ -63,7 +63,7 @@
 * Состояние Retry сохраняется в очереди через `attempts` и `nextRetryAt`.
 * После достижения максимального количества попыток запрос удаляется из очереди.
 
-[Подробнее → Retry Policy](docs/ru/configuration/retry.md)
+[Подробнее → Retry Policy](configuration/retry.md)
 
 ### Logging
 
@@ -76,7 +76,7 @@
 * Настраиваемый `LogTransport`.
 * Отдельные события для планирования и запуска Retry.
 
-[Подробнее → Logging](docs/ru/configuration/logging.md)
+[Подробнее → Logging](configuration/logging.md)
 
 
 ---

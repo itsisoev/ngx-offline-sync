@@ -75,8 +75,3 @@ provideOfflineSync({
 When the connection is restored, a queue of 20 requests forms 4 batches of 5. Batches are processed sequentially — one at a time — with requests inside each batch running in parallel.
 
 > ⚠️ Increasing `batchSize` speeds up synchronization, but it also increases load on the server the moment the connection is restored. Pick a value that fits what your backend can handle.
-
-## See also
-
-- [Architecture](../guides/architecture.md) — `SyncService` and where `batchSize` is applied
-- [Request statuses](../guides/statuses.md) — how to track a batch's progress
