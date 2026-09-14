@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Observable, of, throwError } from 'rxjs';
+import { config, Observable, of, throwError } from 'rxjs';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 
 import { SyncService } from './sync.service';
@@ -10,6 +10,7 @@ import { HttpMethod } from '../../core';
 import { RetryPolicy } from '../policies/retry.policy';
 import { ILogger, LogEvent } from '../../logging';
 import { SyncResult } from '../enums/sync-result.enum';
+import { IOfflineSyncConfig } from '../../config';
 
 class FakeStorage implements IStorage<IQueueItem> {
   private readonly items = new Map<string, IQueueItem>();
@@ -70,7 +71,8 @@ class FakeLogger implements ILogger {
 describe('SyncService', () => {
   it('should remove item and return SUCCESS when request succeeds', async () => {
     const storage = new FakeStorage();
-    const queue = new QueueService(storage);
+    const config: IOfflineSyncConfig = {};
+    const queue = new QueueService(storage, config);
     const http = new FakeHttpClient();
     const logger = new FakeLogger();
 
@@ -98,7 +100,8 @@ describe('SyncService', () => {
 
   it('should remove item and return FAILED when request returns a client error', async () => {
     const storage = new FakeStorage();
-    const queue = new QueueService(storage);
+    const config: IOfflineSyncConfig = {};
+    const queue = new QueueService(storage, config);
     const http = new FakeHttpClient();
     const logger = new FakeLogger();
 
@@ -128,7 +131,8 @@ describe('SyncService', () => {
 
   it('should return RETRY and schedule next attempt when request returns a server error', async () => {
     const storage = new FakeStorage();
-    const queue = new QueueService(storage);
+    const config: IOfflineSyncConfig = {};
+    const queue = new QueueService(storage, config);
     const http = new FakeHttpClient();
     const logger = new FakeLogger();
 
@@ -165,7 +169,8 @@ describe('SyncService', () => {
 
   it('should return RETRY when a network error occurs', async () => {
     const storage = new FakeStorage();
-    const queue = new QueueService(storage);
+    const config: IOfflineSyncConfig = {};
+    const queue = new QueueService(storage, config);
     const http = new FakeHttpClient();
     const logger = new FakeLogger();
 
@@ -201,7 +206,8 @@ describe('SyncService', () => {
 
   it('should remove item after maximum attempts', async () => {
     const storage = new FakeStorage();
-    const queue = new QueueService(storage);
+    const config: IOfflineSyncConfig = {}
+    const queue = new QueueService(storage, config);
     const http = new FakeHttpClient();
     const logger = new FakeLogger();
 

@@ -1,7 +1,8 @@
 import { IQueueItem } from '../queue-item/interfaces/queue-item.interface';
+import { EnqueueStatus } from '../enums/enqueue-status.enum';
 
 export interface IQueue {
-  enqueue(item: IQueueItem): Promise<void>;
+  enqueue(item: IQueueItem): Promise<EnqueueStatus>;
   dequeue(): Promise<IQueueItem | undefined>;
   peek(): Promise<IQueueItem | undefined>;
   remove(id: string): Promise<void>;
@@ -11,4 +12,5 @@ export interface IQueue {
   clear(): Promise<void>;
   size(): Promise<number>;
   dequeueBatch(size: number): Promise<IQueueItem[]>;
+  getTotalSize(): Promise<number>;
 }

@@ -18,6 +18,17 @@ export const appConfig: ApplicationConfig = {
       batchSize: 10,
       logLevel: LogLevel.ALL,
       language: LogLanguage.RU,
+      retry: {
+        maxAttempts: 3,
+        delay: 15000,
+      },
+      maxQueueSize: 10,
+      onQueueFull: () => {
+        console.log('Offline queue is full');
+      },
+      onNetworkStatusChange: (offline) => {
+        console.log('Offline:', offline);
+      },
     }),
   ],
 };

@@ -5,11 +5,12 @@ import { describe, expect, it, beforeEach, afterEach } from 'vitest';
 import { offlineSyncInterceptor } from './offline-sync.interceptor';
 import { IQueueItem, QueuePriority, QueueService } from '../../queue';
 import { IStorage } from '../../storage';
-import { HttpMethod, SyncStatus } from '../../core';
+import { HttpMethod } from '../../core';
 import { OFFLINE_SYNC_PRIORITY } from '../tokens/offline-sync-priority.token';
 import { NetworkStatusService } from '../../network';
 import { LoggerService } from '../../logging';
 import { firstValueFrom } from 'rxjs';
+import { IOfflineSyncConfig } from '../../config';
 
 class FakeStorage implements IStorage<IQueueItem> {
   private readonly items = new Map<string, IQueueItem>();
@@ -43,7 +44,10 @@ describe('offlineSyncInterceptor', () => {
 
   beforeEach(() => {
     storage = new FakeStorage();
-    queue = new QueueService(storage);
+
+    const config: IOfflineSyncConfig = {};
+
+    queue = new QueueService(storage, config);
 
     TestBed.configureTestingModule({
       providers: [
@@ -82,13 +86,11 @@ describe('offlineSyncInterceptor', () => {
   });
 
   it('should use NORMAL priority by default', async () => {
-    http
-      .post('/products', {
+    await firstValueFrom(
+      http.post('/products', {
         title: 'Product',
-      })
-      .subscribe();
-
-    await Promise.resolve();
+      }),
+    );
 
     const pending = await queue.getPending();
 
@@ -102,17 +104,15 @@ describe('offlineSyncInterceptor', () => {
   it('should use HIGH priority when specified', async () => {
     const context = new HttpContext().set(OFFLINE_SYNC_PRIORITY, QueuePriority.HIGH);
 
-    http
-      .post(
+    await firstValueFrom(
+      http.post(
         '/products',
         {
           title: 'Important product',
         },
         { context },
-      )
-      .subscribe();
-
-    await Promise.resolve();
+      ),
+    );
 
     const pending = await queue.getPending();
 
@@ -123,17 +123,15 @@ describe('offlineSyncInterceptor', () => {
   it('should use LOW priority when specified', async () => {
     const context = new HttpContext().set(OFFLINE_SYNC_PRIORITY, QueuePriority.LOW);
 
-    http
-      .post(
+    await firstValueFrom(
+      http.post(
         '/products',
         {
           title: 'Low priority product',
         },
         { context },
-      )
-      .subscribe();
-
-    await Promise.resolve();
+      ),
+    );
 
     const pending = await queue.getPending();
 
@@ -142,13 +140,11 @@ describe('offlineSyncInterceptor', () => {
   });
 
   it('should queue POST requests when offline', async () => {
-    http
-      .post('/products', {
+    await firstValueFrom(
+      http.post('/products', {
         title: 'Product',
-      })
-      .subscribe();
-
-    await Promise.resolve();
+      }),
+    );
 
     const pending = await queue.getPending();
 
@@ -156,13 +152,11 @@ describe('offlineSyncInterceptor', () => {
   });
 
   it('should queue PUT requests when offline', async () => {
-    http
-      .put('/products/1', {
+    await firstValueFrom(
+      http.put('/products/1', {
         title: 'Updated product',
-      })
-      .subscribe();
-
-    await Promise.resolve();
+      }),
+    );
 
     const pending = await queue.getPending();
 
@@ -170,13 +164,11 @@ describe('offlineSyncInterceptor', () => {
   });
 
   it('should queue PATCH requests when offline', async () => {
-    http
-      .patch('/products/1', {
+    await firstValueFrom(
+      http.patch('/products/1', {
         title: 'Updated product',
-      })
-      .subscribe();
-
-    await Promise.resolve();
+      }),
+    );
 
     const pending = await queue.getPending();
 
@@ -184,9 +176,7 @@ describe('offlineSyncInterceptor', () => {
   });
 
   it('should queue DELETE requests when offline', async () => {
-    http.delete('/products/1').subscribe();
-
-    await Promise.resolve();
+    await firstValueFrom(http.delete('/products/1'));
 
     const pending = await queue.getPending();
 
@@ -228,9 +218,7 @@ describe('offlineSyncInterceptor', () => {
       price: 100,
     };
 
-    http.post('/products', body).subscribe();
-
-    await Promise.resolve();
+    await firstValueFrom(http.post('/products', body));
 
     const pending = await queue.getPending();
 

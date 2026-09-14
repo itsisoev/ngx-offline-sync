@@ -8,7 +8,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build ngx-offline-sync",
     "watch": "ng build --watch --configuration development",
     "test": "ng test ngx-offline-sync"
   },

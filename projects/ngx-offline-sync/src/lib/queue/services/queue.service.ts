@@ -4,15 +4,29 @@ import { IQueueItem } from '../queue-item/interfaces/queue-item.interface';
 import { SyncStatus } from '../../core';
 import { IStorage } from '../../storage';
 import { QueuePriority } from '../queue-item/enums/queue-priority.enum';
-
+import { DEFAULT_MAX_QUEUE_SIZE, IOfflineSyncConfig } from '../../config';
+import { EnqueueStatus } from '../enums/enqueue-status.enum';
 
 export class QueueService implements IQueue {
   private readonly reservedIds = new Set<string>();
 
-  constructor(private readonly storage: IStorage<IQueueItem>) {}
+  constructor(
+    private readonly storage: IStorage<IQueueItem>,
+    private readonly config: IOfflineSyncConfig,
+  ) {}
 
-  async enqueue(item: IQueueItem): Promise<void> {
+  async enqueue(item: IQueueItem): Promise<EnqueueStatus> {
+    const currentSize = await this.getTotalSize();
+    const maxQueueSize = this.config.maxQueueSize ?? DEFAULT_MAX_QUEUE_SIZE;
+
+    if (currentSize >= maxQueueSize) {
+      this.config.onQueueFull?.();
+      return EnqueueStatus.QUEUE_FULL;
+    }
+
     await this.storage.save(item);
+
+    return EnqueueStatus.QUEUED;
   }
 
   async dequeue(): Promise<IQueueItem | undefined> {
@@ -149,6 +163,11 @@ export class QueueService implements IQueue {
     }
 
     return reservedItems;
+  }
+
+  async getTotalSize(): Promise<number> {
+    const items = await this.storage.getAll();
+    return items.length;
   }
 
   private getPriorityWeight(priority: QueuePriority): number {
