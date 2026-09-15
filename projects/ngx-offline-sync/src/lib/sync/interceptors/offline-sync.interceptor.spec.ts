@@ -2,6 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { HttpClient, HttpContext, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { describe, expect, it, beforeEach, afterEach } from 'vitest';
+import { firstValueFrom } from 'rxjs';
+
 import { offlineSyncInterceptor } from './offline-sync.interceptor';
 import { IQueueItem, QueuePriority, QueueService } from '../../queue';
 import { IStorage } from '../../storage';
@@ -9,7 +11,6 @@ import { HttpMethod } from '../../core';
 import { OFFLINE_SYNC_PRIORITY } from '../tokens/offline-sync-priority.token';
 import { NetworkStatusService } from '../../network';
 import { LoggerService } from '../../logging';
-import { firstValueFrom } from 'rxjs';
 import { IOfflineSyncConfig } from '../../config';
 
 class FakeStorage implements IStorage<IQueueItem> {
@@ -96,7 +97,6 @@ describe('offlineSyncInterceptor', () => {
 
     expect(pending).toHaveLength(1);
     expect(pending[0].priority).toBe(QueuePriority.NORMAL);
-
     expect(pending[0].request.method).toBe(HttpMethod.POST);
     expect(pending[0].request.url).toBe('/products');
   });
@@ -223,5 +223,64 @@ describe('offlineSyncInterceptor', () => {
     const pending = await queue.getPending();
 
     expect(pending[0].request.body).toEqual(body);
+  });
+
+  it('should return an error when queue reaches maximum size', async () => {
+    const config: IOfflineSyncConfig = {
+      maxQueueSize: 1,
+    };
+
+    queue = new QueueService(storage, config);
+
+    TestBed.resetTestingModule();
+
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(withInterceptors([offlineSyncInterceptor])),
+        provideHttpClientTesting(),
+
+        {
+          provide: QueueService,
+          useValue: queue,
+        },
+
+        {
+          provide: NetworkStatusService,
+          useValue: {
+            isOnline: () => false,
+          },
+        },
+
+        {
+          provide: LoggerService,
+          useValue: {
+            info: () => undefined,
+            error: () => undefined,
+            warn: () => undefined,
+          },
+        },
+      ],
+    });
+
+    http = TestBed.inject(HttpClient);
+    httpTesting = TestBed.inject(HttpTestingController);
+
+    await firstValueFrom(
+      http.post('/products', {
+        title: 'First product',
+      }),
+    );
+
+    expect(
+      firstValueFrom(
+        http.post('/products', {
+          title: 'Second product',
+        }),
+      ),
+    ).rejects.toThrow('Offline queue is full');
+
+    const pending = await queue.getPending();
+
+    expect(pending).toHaveLength(1);
   });
 });

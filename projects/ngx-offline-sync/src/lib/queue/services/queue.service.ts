@@ -9,6 +9,7 @@ import { EnqueueStatus } from '../enums/enqueue-status.enum';
 
 export class QueueService implements IQueue {
   private readonly reservedIds = new Set<string>();
+  private enqueueChain: Promise<void> = Promise.resolve();
 
   constructor(
     private readonly storage: IStorage<IQueueItem>,
@@ -16,17 +17,30 @@ export class QueueService implements IQueue {
   ) {}
 
   async enqueue(item: IQueueItem): Promise<EnqueueStatus> {
-    const currentSize = await this.getTotalSize();
-    const maxQueueSize = this.config.maxQueueSize ?? DEFAULT_MAX_QUEUE_SIZE;
+    let result: EnqueueStatus = EnqueueStatus.QUEUED;
 
-    if (currentSize >= maxQueueSize) {
-      this.config.onQueueFull?.();
-      return EnqueueStatus.QUEUE_FULL;
-    }
+    const operation = this.enqueueChain.then(async () => {
+      const currentSize = await this.getTotalSize();
+      const maxQueueSize = this.config.maxQueueSize ?? DEFAULT_MAX_QUEUE_SIZE;
 
-    await this.storage.save(item);
+      if (currentSize >= maxQueueSize) {
+        this.config.onQueueFull?.();
+        result = EnqueueStatus.QUEUE_FULL;
+        return;
+      }
 
-    return EnqueueStatus.QUEUED;
+      await this.storage.save(item);
+      result = EnqueueStatus.QUEUED;
+    });
+
+    this.enqueueChain = operation.then(
+      () => undefined,
+      () => undefined,
+    );
+
+    await operation;
+
+    return result;
   }
 
   async dequeue(): Promise<IQueueItem | undefined> {
@@ -167,6 +181,7 @@ export class QueueService implements IQueue {
 
   async getTotalSize(): Promise<number> {
     const items = await this.storage.getAll();
+
     return items.length;
   }
 
