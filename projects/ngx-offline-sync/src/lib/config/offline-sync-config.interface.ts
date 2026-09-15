@@ -25,4 +25,21 @@ export interface IOfflineSyncConfig {
    * Retry configuration for failed requests.
    */
   retry?: IRetryConfig;
+
+  /**
+   * Maximum number of requests that can be stored in the queue.
+   * @default 150
+   */
+  maxQueueSize?: number;
+
+  /**
+   * Callback called when the queue reaches the maximum size.
+   */
+  onQueueFull?: () => void;
+
+  /**
+   * Callback called when network status changes.
+   * @param offline Whether the application is currently offline.
+   */
+  onNetworkStatusChange?: (offline: boolean) => void;
 }

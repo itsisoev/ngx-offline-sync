@@ -5,6 +5,7 @@ import { HttpMethod, SyncStatus } from '../../core';
 import { createQueueItem } from '../queue-item/factories/queue-item.factory';
 import { IndexedDbStorage } from '../../storage';
 import { IQueueItem } from '../queue-item/interfaces/queue-item.interface';
+import { IOfflineSyncConfig } from '../../config';
 
 describe('QueueService + IndexedDbStorage', () => {
   let queue: QueueService;
@@ -12,10 +13,10 @@ describe('QueueService + IndexedDbStorage', () => {
 
   beforeEach(async () => {
     storage = new IndexedDbStorage<IQueueItem>();
-
+    const config: IOfflineSyncConfig = {};
     await storage.clear();
 
-    queue = new QueueService(storage);
+    queue = new QueueService(storage, config);
   });
 
   it('should enqueue and retrieve an item from IndexedDB', async () => {
@@ -98,7 +99,9 @@ describe('QueueService + IndexedDbStorage', () => {
 
   it('should persist an item between storage instances', async () => {
     const firstStorage = new IndexedDbStorage<IQueueItem>();
-    const firstQueue = new QueueService(firstStorage);
+    const config: IOfflineSyncConfig = {};
+
+    const firstQueue = new QueueService(firstStorage, config);
 
     const item = createQueueItem({
       id: 'request-1',

@@ -236,6 +236,8 @@ this.http.post('/api/products', product).subscribe();
 
 * [Конфигурация](configuration/index.md)
 * [batchSize](configuration/batch-size.md)
+* [maxQueueSize и onQueueFull](configuration/max-queue-size.md)
+* [onNetworkStatusChange](configuration/network-status.md)
 * [logLevel и language](configuration/logging.md)
 * [Retry Policy](configuration/retry.md)
 * [Приоритет отдельных запросов](configuration/priority-queue.md)

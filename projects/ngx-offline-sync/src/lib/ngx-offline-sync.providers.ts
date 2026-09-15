@@ -9,7 +9,7 @@ import { QueueService, IQueueItem } from './queue';
 import { IndexedDbStorage } from './storage';
 import { RetryPolicy, SyncService, RetrySchedulerService, SyncCoordinatorService } from './sync';
 import { NetworkStatusService } from './network';
-import { OFFLINE_SYNC_CONFIG, IOfflineSyncConfig } from './config';
+import { OFFLINE_SYNC_CONFIG, IOfflineSyncConfig, DEFAULT_MAX_QUEUE_SIZE } from './config';
 import {
   LoggerService,
   ConsoleLogTransport,
@@ -22,28 +22,24 @@ export function provideOfflineSync(config: IOfflineSyncConfig = {}): Environment
   return makeEnvironmentProviders([
     NetworkStatusService,
     LoggerService,
-
     {
       provide: LOG_TRANSPORT,
       useClass: ConsoleLogTransport,
     },
-
     {
       provide: IndexedDbStorage,
       useFactory: () => new IndexedDbStorage<IQueueItem>(),
     },
-
     {
       provide: QueueService,
-      useFactory: (storage: IndexedDbStorage<IQueueItem>) => new QueueService(storage),
-      deps: [IndexedDbStorage],
+      useFactory: (storage: IndexedDbStorage<IQueueItem>, config: IOfflineSyncConfig) =>
+        new QueueService(storage, config),
+      deps: [IndexedDbStorage, OFFLINE_SYNC_CONFIG],
     },
-
     {
       provide: RetryPolicy,
       useFactory: () => new RetryPolicy(config.retry?.maxAttempts, config.retry?.delay),
     },
-
     {
       provide: SyncService,
       useFactory: (
@@ -54,10 +50,8 @@ export function provideOfflineSync(config: IOfflineSyncConfig = {}): Environment
       ) => new SyncService(queue, http, retryPolicy, logger),
       deps: [QueueService, HttpClient, RetryPolicy, LoggerService],
     },
-
     RetrySchedulerService,
     SyncCoordinatorService,
-
     {
       provide: ENVIRONMENT_INITIALIZER,
       multi: true,
@@ -67,13 +61,15 @@ export function provideOfflineSync(config: IOfflineSyncConfig = {}): Environment
         coordinator.start();
       },
     },
-
     {
       provide: OFFLINE_SYNC_CONFIG,
       useValue: {
         batchSize: config.batchSize ?? 1,
         logLevel: config.logLevel ?? LogLevel.NONE,
         language: config.language ?? LogLanguage.EN,
+        maxQueueSize: config.maxQueueSize ?? DEFAULT_MAX_QUEUE_SIZE,
+        onQueueFull: config.onQueueFull,
+        onNetworkStatusChange: config.onNetworkStatusChange,
       },
     },
   ]);

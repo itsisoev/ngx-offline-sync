@@ -2,7 +2,7 @@ import { HttpEvent, HttpHandlerFn, HttpRequest, HttpResponse } from '@angular/co
 import { inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { NetworkStatusService } from '../../network';
-import { QueueService, createQueueItem } from '../../queue';
+import { QueueService, createQueueItem, EnqueueStatus } from '../../queue';
 import { HttpMethod } from '../../core';
 import { LogEvent, LoggerService } from '../../logging';
 import { OFFLINE_SYNC_PRIORITY } from '../tokens/offline-sync-priority.token';
@@ -49,7 +49,12 @@ export function offlineSyncInterceptor(
   return new Observable<HttpEvent<unknown>>((subscriber) => {
     queue
       .enqueue(queueItem)
-      .then(() => {
+      .then((status) => {
+        if (status === EnqueueStatus.QUEUE_FULL) {
+          subscriber.error(new Error('Offline queue is full'));
+          return;
+        }
+
         logger.info(LogEvent.REQUEST_QUEUED, {
           id: queueItem.id,
           method,

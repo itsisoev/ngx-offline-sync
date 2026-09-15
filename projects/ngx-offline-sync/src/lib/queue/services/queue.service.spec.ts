@@ -5,6 +5,8 @@ import { IStorage } from '../../storage';
 import { QueuePriority } from '../queue-item/enums/queue-priority.enum';
 import { IQueueItem } from '../queue-item/interfaces/queue-item.interface';
 import { createQueueItem } from '../queue-item/factories/queue-item.factory';
+import { IOfflineSyncConfig } from '../../config';
+import { EnqueueStatus } from '../enums/enqueue-status.enum';
 
 class FakeStorage implements IStorage<IQueueItem> {
   private readonly items = new Map<string, IQueueItem>();
@@ -28,6 +30,11 @@ class FakeStorage implements IStorage<IQueueItem> {
   async clear(): Promise<void> {
     this.items.clear();
   }
+
+  async getTotalSize(): Promise<number> {
+    const items = await this.getAll();
+    return items.length;
+  }
 }
 
 describe('QueueService', () => {
@@ -45,12 +52,14 @@ describe('QueueService', () => {
 
   beforeEach(() => {
     storage = new FakeStorage();
-    queue = new QueueService(storage);
+    const config: IOfflineSyncConfig = {};
+    queue = new QueueService(storage, config);
   });
 
   it('should enqueue an item', async () => {
     const storage = new FakeStorage();
-    const queue = new QueueService(storage);
+    const config: IOfflineSyncConfig = {};
+    const queue = new QueueService(storage, config);
 
     const item = createQueueItem(createRequest('request-1'));
 
@@ -64,7 +73,8 @@ describe('QueueService', () => {
 
   it('should return the first pending item with peek', async () => {
     const storage = new FakeStorage();
-    const queue = new QueueService(storage);
+    const config: IOfflineSyncConfig = {};
+    const queue = new QueueService(storage, config);
 
     const first = createQueueItem(createRequest('request-1'));
     const second = createQueueItem(createRequest('request-2'));
@@ -79,7 +89,8 @@ describe('QueueService', () => {
 
   it('should mark the first pending item as syncing with dequeue', async () => {
     const storage = new FakeStorage();
-    const queue = new QueueService(storage);
+    const config: IOfflineSyncConfig = {};
+    const queue = new QueueService(storage, config);
 
     const first = createQueueItem(createRequest('request-1'));
     const second = createQueueItem(createRequest('request-2'));
@@ -104,7 +115,8 @@ describe('QueueService', () => {
 
   it('should remove an item by id', async () => {
     const storage = new FakeStorage();
-    const queue = new QueueService(storage);
+    const config: IOfflineSyncConfig = {};
+    const queue = new QueueService(storage, config);
 
     const item = createQueueItem(createRequest('request-1'));
 
@@ -118,7 +130,8 @@ describe('QueueService', () => {
 
   it('should return only pending items', async () => {
     const storage = new FakeStorage();
-    const queue = new QueueService(storage);
+    const config: IOfflineSyncConfig = {};
+    const queue = new QueueService(storage, config);
 
     const pending = createQueueItem(createRequest('request-1'));
 
@@ -137,7 +150,8 @@ describe('QueueService', () => {
 
   it('should return the number of pending items', async () => {
     const storage = new FakeStorage();
-    const queue = new QueueService(storage);
+    const config: IOfflineSyncConfig = {};
+    const queue = new QueueService(storage, config);
 
     const first = createQueueItem(createRequest('request-1'));
     const second = createQueueItem(createRequest('request-2'));
@@ -150,7 +164,8 @@ describe('QueueService', () => {
 
   it('should clear the queue', async () => {
     const storage = new FakeStorage();
-    const queue = new QueueService(storage);
+    const config: IOfflineSyncConfig = {};
+    const queue = new QueueService(storage, config);
 
     const first = createQueueItem(createRequest('request-1'));
     const second = createQueueItem(createRequest('request-2'));
@@ -165,7 +180,8 @@ describe('QueueService', () => {
 
   it('should update an item', async () => {
     const storage = new FakeStorage();
-    const queue = new QueueService(storage);
+    const config: IOfflineSyncConfig = {};
+    const queue = new QueueService(storage, config);
 
     const item = createQueueItem(createRequest('request-1'));
 
@@ -184,7 +200,8 @@ describe('QueueService', () => {
 
   it('should do nothing when updating a non-existent item', async () => {
     const storage = new FakeStorage();
-    const queue = new QueueService(storage);
+    const config: IOfflineSyncConfig = {};
+    const queue = new QueueService(storage, config);
 
     await queue.update('unknown-id', {
       status: SyncStatus.SYNCING,
@@ -197,7 +214,8 @@ describe('QueueService', () => {
 
   it('should mark an item as completed', async () => {
     const storage = new FakeStorage();
-    const queue = new QueueService(storage);
+    const config: IOfflineSyncConfig = {};
+    const queue = new QueueService(storage, config);
 
     const item = createQueueItem(createRequest('request-1'));
 
@@ -218,7 +236,8 @@ describe('QueueService', () => {
 
   it('should mark an item as failed', async () => {
     const storage = new FakeStorage();
-    const queue = new QueueService(storage);
+    const config: IOfflineSyncConfig = {};
+    const queue = new QueueService(storage, config);
 
     const item = createQueueItem(createRequest('request-1'));
 
@@ -243,7 +262,8 @@ describe('QueueService', () => {
 
   it('should preserve item data when updating its status', async () => {
     const storage = new FakeStorage();
-    const queue = new QueueService(storage);
+    const config: IOfflineSyncConfig = {};
+    const queue = new QueueService(storage, config);
 
     const item = createQueueItem(createRequest('request-1'));
 
@@ -264,7 +284,8 @@ describe('QueueService', () => {
 
   it('should return undefined when dequeuing an empty queue', async () => {
     const storage = new FakeStorage();
-    const queue = new QueueService(storage);
+    const config: IOfflineSyncConfig = {};
+    const queue = new QueueService(storage, config);
 
     const result = await queue.dequeue();
 
@@ -273,7 +294,8 @@ describe('QueueService', () => {
 
   it('should not return an item before its retry time', async () => {
     const storage = new FakeStorage();
-    const queue = new QueueService(storage);
+    const config: IOfflineSyncConfig = {};
+    const queue = new QueueService(storage, config);
 
     const item = createQueueItem(createRequest('request-1'));
 
@@ -289,7 +311,8 @@ describe('QueueService', () => {
 
   it('should return an item when its retry time has passed', async () => {
     const storage = new FakeStorage();
-    const queue = new QueueService(storage);
+    const config: IOfflineSyncConfig = {};
+    const queue = new QueueService(storage, config);
 
     const item = createQueueItem(createRequest('request-1'));
 
@@ -467,5 +490,52 @@ describe('QueueService', () => {
 
     expect(result[0].id).toBe(highPriorityItem.id);
     expect(result[1].id).toBe(legacyItem.id);
+  });
+
+  it('should not enqueue an item when queue reaches maximum size', async () => {
+    const storage = new FakeStorage();
+    const config: IOfflineSyncConfig = {
+      maxQueueSize: 150,
+    };
+    const queue = new QueueService(storage, config);
+
+    for (let i = 0; i < 150; i++) {
+      const item = createQueueItem(createRequest(`request-${i}`));
+
+      await queue.enqueue(item);
+    }
+
+    const size = await queue.getTotalSize();
+
+    expect(size).toBe(150);
+
+    const item = createQueueItem(createRequest('request-150'));
+
+    const result = await queue.enqueue(item);
+
+    expect(result).toBe(EnqueueStatus.QUEUE_FULL);
+  });
+
+  it('should call onQueueFull when queue reaches maximum size', async () => {
+    const storage = new FakeStorage();
+
+    let queueFullCalled = false;
+
+    const config: IOfflineSyncConfig = {
+      maxQueueSize: 2,
+      onQueueFull: () => {
+        queueFullCalled = true;
+      },
+    };
+
+    const queue = new QueueService(storage, config);
+
+    await queue.enqueue(createQueueItem(createRequest('request-1')));
+
+    await queue.enqueue(createQueueItem(createRequest('request-2')));
+
+    await queue.enqueue(createQueueItem(createRequest('request-3')));
+
+    expect(queueFullCalled).toBe(true);
   });
 });

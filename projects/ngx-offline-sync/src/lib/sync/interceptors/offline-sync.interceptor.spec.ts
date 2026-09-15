@@ -2,14 +2,16 @@ import { TestBed } from '@angular/core/testing';
 import { HttpClient, HttpContext, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { describe, expect, it, beforeEach, afterEach } from 'vitest';
+import { firstValueFrom } from 'rxjs';
+
 import { offlineSyncInterceptor } from './offline-sync.interceptor';
 import { IQueueItem, QueuePriority, QueueService } from '../../queue';
 import { IStorage } from '../../storage';
-import { HttpMethod, SyncStatus } from '../../core';
+import { HttpMethod } from '../../core';
 import { OFFLINE_SYNC_PRIORITY } from '../tokens/offline-sync-priority.token';
 import { NetworkStatusService } from '../../network';
 import { LoggerService } from '../../logging';
-import { firstValueFrom } from 'rxjs';
+import { IOfflineSyncConfig } from '../../config';
 
 class FakeStorage implements IStorage<IQueueItem> {
   private readonly items = new Map<string, IQueueItem>();
@@ -43,7 +45,10 @@ describe('offlineSyncInterceptor', () => {
 
   beforeEach(() => {
     storage = new FakeStorage();
-    queue = new QueueService(storage);
+
+    const config: IOfflineSyncConfig = {};
+
+    queue = new QueueService(storage, config);
 
     TestBed.configureTestingModule({
       providers: [
@@ -82,19 +87,16 @@ describe('offlineSyncInterceptor', () => {
   });
 
   it('should use NORMAL priority by default', async () => {
-    http
-      .post('/products', {
+    await firstValueFrom(
+      http.post('/products', {
         title: 'Product',
-      })
-      .subscribe();
-
-    await Promise.resolve();
+      }),
+    );
 
     const pending = await queue.getPending();
 
     expect(pending).toHaveLength(1);
     expect(pending[0].priority).toBe(QueuePriority.NORMAL);
-
     expect(pending[0].request.method).toBe(HttpMethod.POST);
     expect(pending[0].request.url).toBe('/products');
   });
@@ -102,17 +104,15 @@ describe('offlineSyncInterceptor', () => {
   it('should use HIGH priority when specified', async () => {
     const context = new HttpContext().set(OFFLINE_SYNC_PRIORITY, QueuePriority.HIGH);
 
-    http
-      .post(
+    await firstValueFrom(
+      http.post(
         '/products',
         {
           title: 'Important product',
         },
         { context },
-      )
-      .subscribe();
-
-    await Promise.resolve();
+      ),
+    );
 
     const pending = await queue.getPending();
 
@@ -123,17 +123,15 @@ describe('offlineSyncInterceptor', () => {
   it('should use LOW priority when specified', async () => {
     const context = new HttpContext().set(OFFLINE_SYNC_PRIORITY, QueuePriority.LOW);
 
-    http
-      .post(
+    await firstValueFrom(
+      http.post(
         '/products',
         {
           title: 'Low priority product',
         },
         { context },
-      )
-      .subscribe();
-
-    await Promise.resolve();
+      ),
+    );
 
     const pending = await queue.getPending();
 
@@ -142,13 +140,11 @@ describe('offlineSyncInterceptor', () => {
   });
 
   it('should queue POST requests when offline', async () => {
-    http
-      .post('/products', {
+    await firstValueFrom(
+      http.post('/products', {
         title: 'Product',
-      })
-      .subscribe();
-
-    await Promise.resolve();
+      }),
+    );
 
     const pending = await queue.getPending();
 
@@ -156,13 +152,11 @@ describe('offlineSyncInterceptor', () => {
   });
 
   it('should queue PUT requests when offline', async () => {
-    http
-      .put('/products/1', {
+    await firstValueFrom(
+      http.put('/products/1', {
         title: 'Updated product',
-      })
-      .subscribe();
-
-    await Promise.resolve();
+      }),
+    );
 
     const pending = await queue.getPending();
 
@@ -170,13 +164,11 @@ describe('offlineSyncInterceptor', () => {
   });
 
   it('should queue PATCH requests when offline', async () => {
-    http
-      .patch('/products/1', {
+    await firstValueFrom(
+      http.patch('/products/1', {
         title: 'Updated product',
-      })
-      .subscribe();
-
-    await Promise.resolve();
+      }),
+    );
 
     const pending = await queue.getPending();
 
@@ -184,9 +176,7 @@ describe('offlineSyncInterceptor', () => {
   });
 
   it('should queue DELETE requests when offline', async () => {
-    http.delete('/products/1').subscribe();
-
-    await Promise.resolve();
+    await firstValueFrom(http.delete('/products/1'));
 
     const pending = await queue.getPending();
 
@@ -228,12 +218,69 @@ describe('offlineSyncInterceptor', () => {
       price: 100,
     };
 
-    http.post('/products', body).subscribe();
-
-    await Promise.resolve();
+    await firstValueFrom(http.post('/products', body));
 
     const pending = await queue.getPending();
 
     expect(pending[0].request.body).toEqual(body);
+  });
+
+  it('should return an error when queue reaches maximum size', async () => {
+    const config: IOfflineSyncConfig = {
+      maxQueueSize: 1,
+    };
+
+    queue = new QueueService(storage, config);
+
+    TestBed.resetTestingModule();
+
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(withInterceptors([offlineSyncInterceptor])),
+        provideHttpClientTesting(),
+
+        {
+          provide: QueueService,
+          useValue: queue,
+        },
+
+        {
+          provide: NetworkStatusService,
+          useValue: {
+            isOnline: () => false,
+          },
+        },
+
+        {
+          provide: LoggerService,
+          useValue: {
+            info: () => undefined,
+            error: () => undefined,
+            warn: () => undefined,
+          },
+        },
+      ],
+    });
+
+    http = TestBed.inject(HttpClient);
+    httpTesting = TestBed.inject(HttpTestingController);
+
+    await firstValueFrom(
+      http.post('/products', {
+        title: 'First product',
+      }),
+    );
+
+    expect(
+      firstValueFrom(
+        http.post('/products', {
+          title: 'Second product',
+        }),
+      ),
+    ).rejects.toThrow('Offline queue is full');
+
+    const pending = await queue.getPending();
+
+    expect(pending).toHaveLength(1);
   });
 });
