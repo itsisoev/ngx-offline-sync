@@ -36,47 +36,6 @@ You don't need to build your own request queue, manage IndexedDB, or implement n
 * [Project status](#project-status)
 * [License](#license)
 
-## What's New
-
-### Priority Queue
-
-Added support for request priorities to control the synchronization order of offline requests.
-
-* `HIGH`, `NORMAL`, and `LOW` priorities.
-* `NORMAL` is used by default.
-* Priority can be set for individual HTTP requests through `HttpContext`.
-* Higher-priority requests are synchronized before lower-priority requests.
-* Requests with the same priority preserve their original queue order.
-* Added `QueuePriority` and `OFFLINE_SYNC_PRIORITY` to the public API.
-* Added tests and Priority Queue support to the Demo.
-
-[Learn more → Priority Queue](docs/en/configuration/priority-queue.md)
-
-### Retry Policy
-
-Added automatic handling of temporary errors.
-
-* Configurable `maxAttempts` and `delay`.
-* Linear Backoff between retry attempts.
-* Automatic scheduling of retry attempts.
-* Retry support for network errors and `5xx` server errors.
-* Retry state is stored in the queue through `attempts` and `nextRetryAt`.
-* Requests are removed from the queue after reaching the maximum number of attempts.
-
-[Learn more → Retry Policy](docs/en/configuration/retry.md)
-
-### Logging
-
-Expanded the logging and synchronization monitoring system.
-
-* Configurable logging levels through `LogLevel`.
-* English and Russian language support through `LogLanguage`.
-* Typed `LogEvent` values.
-* Synchronization statistics.
-* Configurable `LogTransport`.
-* Dedicated events for retry scheduling and execution.
-
-[Learn more → Logging](docs/en/configuration/logging.md)
 ---
 
 ## How it works
