@@ -234,6 +234,8 @@ See:
 
 * [Configuration](docs/en/configuration/index.md)
 * [batchSize](docs/en/configuration/batch-size.md)
+* [maxQueueSize and onQueueFull](docs/en/configuration/max-queue-size.md)
+* [onNetworkStatusChange](docs/en/configuration/network-status.md)
 * [logLevel and language](docs/en/configuration/logging.md)
 * [Retry Policy](docs/en/configuration/retry.md)
 * [Per-request priority](docs/en/configuration/priority-queue.md)
