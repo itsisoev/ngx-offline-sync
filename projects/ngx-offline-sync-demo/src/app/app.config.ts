@@ -29,6 +29,7 @@ export const appConfig: ApplicationConfig = {
       onNetworkStatusChange: (offline) => {
         console.log('Offline:', offline);
       },
+      appShellCache: { enabled: true },
     }),
   ],
 };

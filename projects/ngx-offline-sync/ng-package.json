@@ -3,7 +3,8 @@
   "dest": "../../dist/ngx-offline-sync",
   "assets": [
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "assets/ngx-offline-sync-sw.js"
   ],
   "lib": {
     "entryFile": "src/public-api.ts"

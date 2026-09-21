@@ -1,6 +1,7 @@
 import { LogLevel } from '../logging';
 import { LogLanguage } from '../logging';
 import { IRetryConfig } from '../sync';
+import { IAppShellCacheConfig } from '../app-shell-cache';
 
 export interface IOfflineSyncConfig {
   /**
@@ -42,4 +43,10 @@ export interface IOfflineSyncConfig {
    * @param offline Whether the application is currently offline.
    */
   onNetworkStatusChange?: (offline: boolean) => void;
+
+  /**
+   * App shell caching (HTML/CSS/JS/fonts) via a Service Worker,
+   * so the page reload still works while offline.
+   */
+  appShellCache?: IAppShellCacheConfig;
 }

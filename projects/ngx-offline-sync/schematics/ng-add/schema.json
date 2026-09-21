@@ -1,0 +1,14 @@
+{
+  "$id": "NgxOfflineSyncNgAdd",
+  "title": "ngx-offline-sync ng add Schema",
+  "type": "object",
+  "properties": {
+    "project": {
+      "type": "string",
+      "description": "Angular application project to configure.",
+      "$default": {
+        "$source": "projectName"
+      }
+    }
+  }
+}

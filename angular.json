@@ -54,6 +54,11 @@
               {
                 "glob": "**/*",
                 "input": "projects/ngx-offline-sync-demo/public"
+              },
+              {
+                "glob": "ngx-offline-sync-sw.js",
+                "input": "projects/ngx-offline-sync/schematics/ng-add/files",
+                "output": "/"
               }
             ],
             "styles": ["projects/ngx-offline-sync-demo/src/styles.scss"]
