@@ -41,7 +41,6 @@ function isStaticAsset(url) {
   return STATIC_EXTENSIONS.some((ext) => url.pathname.endsWith(ext));
 }
 
-// Статика: отдаём из кэша сразу, в фоне тянем свежую версию на будущее
 async function staleWhileRevalidate(request, cacheName) {
   const cache = await caches.open(cacheName);
   const cached = await cache.match(request);
@@ -58,7 +57,6 @@ async function staleWhileRevalidate(request, cacheName) {
   return cached || networkFetch;
 }
 
-// Навигация (HTML): сначала сеть, при неудаче — кэш, при отсутствии кэша — index.html как fallback
 async function networkFirstNavigation(request) {
   const cache = await caches.open(SHELL_CACHE);
 
