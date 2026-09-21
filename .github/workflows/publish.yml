@@ -35,5 +35,8 @@ jobs:
       - name: Build library
         run: npx ng build ngx-offline-sync
 
+      - name: Build schematics
+        run: npm --prefix projects/ngx-offline-sync run build
+
       - name: Publish to npm
         run: npm publish ./dist/ngx-offline-sync
