@@ -86,7 +86,6 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Не трогаем чужие домены и не-GET запросы (мутации остаются на совести offlineSyncInterceptor)
   if (request.method !== 'GET' || url.origin !== self.location.origin) {
     return;
   }
