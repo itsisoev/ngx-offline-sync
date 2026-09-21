@@ -20,12 +20,12 @@ You don't need to build your own request queue, manage IndexedDB, or implement n
 
 ## Table of contents
 
-* [What's New](#whats-new)
 * [How it works](#how-it-works)
 * [Features](#features)
 * [Supported HTTP methods](#supported-http-methods)
 * [Installation](#installation)
 * [Quick Start](#quick-start)
+* [App Shell Cache](#app-shell-cache)
 * [Usage](#usage)
 * [Configuration](#configuration)
 * [Request statuses](#request-statuses)
@@ -111,6 +111,8 @@ The queue is processed automatically, without any involvement from the developer
 * **Automatic request queueing** — supported HTTP requests are automatically saved when the network is unavailable.
 * **IndexedDB** — the queue is stored locally and persists across page reloads.
 * **Automatic synchronization** — queued requests are processed after the connection is restored.
+* **App Shell Cache** — a Service Worker stores the application files, so the app opens after a page reload even without a network.
+* **Installation via `ng add`** — the Service Worker is added to your project automatically.
 * **Batch processing** — multiple requests can be processed in parallel using `batchSize`.
 * **Automatic retries** — failed requests can be retried automatically according to the retry policy.
 * **Angular HTTP interceptor** — the library integrates directly with `HttpClient`.
@@ -135,9 +137,32 @@ The library currently queues the following HTTP methods:
 
 ## Installation
 
+For Angular applications, use `ng add`:
+
+```bash
+ng add ngx-offline-sync
+```
+
+The command installs the library and sets up the Service Worker for you:
+
+* copies `ngx-offline-sync-sw.js` to the `src/assets/` folder;
+* adds it to `assets` in `angular.json`;
+* makes it available at `/ngx-offline-sync-sw.js`.
+
+You don't need to edit `angular.json` manually.
+
+<details>
+<summary><b>Installing via npm</b></summary>
+
+<br>
+
 ```bash
 npm install ngx-offline-sync
 ```
+
+This installs only the package itself — the Service Worker is **not** set up automatically. If you plan to use [App Shell Cache](#app-shell-cache), it's better to choose `ng add`.
+
+</details>
 
 ## Quick Start
 
@@ -168,9 +193,52 @@ export const appConfig: ApplicationConfig = {
 };
 ```
 
-Once this is set up, the library takes care of the queue, local storage, synchronization, and retries on its own. No additional registration of internal services is required.
+That's it! The library takes care of the queue, local storage, synchronization, and retries on its own. There is no need to register internal services.
 
-> `provideOfflineSync()` also accepts an optional configuration object (for example, `batchSize`). See the [Configuration](#configuration) section for the full list of options.
+> `provideOfflineSync()` accepts an optional configuration object: `batchSize`, `maxQueueSize`, `retry`, logging, `appShellCache`, and more. See the [Configuration](docs/en/configuration/index.md) section for the full list.
+
+## App Shell Cache
+
+What if the user **reloads the page while offline**? Without a cache, the application simply won't open.
+
+`App Shell Cache` solves this problem: a Service Worker stores the application files (HTML, JavaScript, CSS, fonts, images) in the browser's `Cache Storage` and serves them when there is no network.
+
+### How to enable
+
+Pass `appShellCache.enabled` to `provideOfflineSync()`:
+
+```typescript
+provideOfflineSync({
+  appShellCache: {
+    enabled: true,
+  },
+}),
+```
+
+The rest of your `appConfig` stays the same as in the [Quick Start](#quick-start) section.
+
+### How it works
+
+```text
+Application
+    ↓
+Service Worker
+    ↓
+Cache Storage
+    ↓
+HTML / JavaScript / CSS / fonts / images
+```
+
+If the page is reloaded without internet, the Service Worker takes the saved files from `Cache Storage`.
+
+### App Shell Cache vs. offline queue — what's the difference?
+
+| Feature         | Responsible for                                                                    |
+|-----------------|------------------------------------------------------------------------------------|
+| App Shell Cache | The app **opens** without a network                                                |
+| Offline queue   | `POST`, `PUT`, `PATCH`, `DELETE` requests **are sent** once the network is back    |
+
+These are two independent features, and they work great together.
 
 ## Usage
 
@@ -187,11 +255,10 @@ No extra wrapper, separate service, or manual queue management is required — `
 
 ## Configuration
 
-The library's behavior can be customized through `provideOfflineSync()`:
-
-See:
+The library's behavior is customized through `provideOfflineSync()`. See:
 
 * [Configuration](docs/en/configuration/index.md)
+* [App Shell Cache](docs/en/configuration/index.md#app-shell-cache)
 * [batchSize](docs/en/configuration/batch-size.md)
 * [maxQueueSize and onQueueFull](docs/en/configuration/max-queue-size.md)
 * [onNetworkStatusChange](docs/en/configuration/network-status.md)
@@ -316,11 +383,15 @@ Retrieves requests from the queue, executes them via `HttpClient`, and updates t
 **RetryPolicy**
 Defines the rules for retrying failed requests — see the [Retries](#retries) section.
 
+**Service Worker (`ngx-offline-sync-sw.js`)**
+Works separately from the queue: when [App Shell Cache](#app-shell-cache) is enabled, it stores the application files in `Cache Storage` and serves them when there is no network.
+
 ## Limitations
 
 * The library is designed to synchronize the following HTTP methods: `POST`, `PUT`, `PATCH`, `DELETE`.
 * `GET` requests are not placed in the offline queue.
 * The queue is stored locally in the browser's IndexedDB.
+* App Shell Cache is only responsible for loading the application itself and does not replace the offline queue.
 
 ## Roadmap
 

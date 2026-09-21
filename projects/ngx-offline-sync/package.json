@@ -1,6 +1,6 @@
 {
   "name": "ngx-offline-sync",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Offline HTTP request synchronization for Angular applications.",
   "author": {
     "name": "Daler",
@@ -33,5 +33,13 @@
   "dependencies": {
     "tslib": "^2.3.0"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "schematics": "./schematics/collection.json",
+  "ng-add": {
+    "save": "dependencies"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.schematics.json",
+    "postbuild": "copyfiles -u 1 \"schematics/package.json\" \"schematics/collection.json\" \"schematics/ng-add/schema.json\" \"schematics/ng-add/files/**/*\" ../../dist/ngx-offline-sync/schematics"
+  }
 }

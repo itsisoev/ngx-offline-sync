@@ -10,3 +10,4 @@ export * from './lib/storage';
 export * from './lib/sync';
 export * from './lib/network';
 export * from './lib/logging';
+export * from './lib/app-shell-cache';

@@ -17,6 +17,7 @@ import {
   LogLevel,
   LogLanguage,
 } from './logging';
+import { provideAppShellCache } from './app-shell-cache';
 
 export function provideOfflineSync(config: IOfflineSyncConfig = {}): EnvironmentProviders {
   return makeEnvironmentProviders([
@@ -72,5 +73,6 @@ export function provideOfflineSync(config: IOfflineSyncConfig = {}): Environment
         onNetworkStatusChange: config.onNetworkStatusChange,
       },
     },
+    provideAppShellCache(config.appShellCache),
   ]);
 }

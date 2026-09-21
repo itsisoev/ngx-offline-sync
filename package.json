@@ -1,6 +1,6 @@
 {
   "name": "ngx-offline-sync",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "author": {
     "name": "Daler",
     "email": "isoev9733@gmail.com"
@@ -27,6 +27,7 @@
     "@angular/build": "^22.1.5",
     "@angular/cli": "^22.1.5",
     "@angular/compiler-cli": "^22.1.0",
+    "copyfiles": "^2.4.1",
     "fake-indexeddb": "^6.2.5",
     "jsdom": "^28.0.0",
     "ng-packagr": "^22.1.0",
